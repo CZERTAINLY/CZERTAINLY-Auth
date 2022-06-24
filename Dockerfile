@@ -5,8 +5,8 @@ WORKDIR /app
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-WORKDIR /src
-COPY ["Czertainly.Auth/Czertainly.Auth.csproj", "Czertainly.Auth/"]
+WORKDIR /
+COPY ["src/Czertainly.Auth/Czertainly.Auth.csproj", "Czertainly.Auth/"]
 RUN dotnet restore "Czertainly.Auth/Czertainly.Auth.csproj"
 COPY . .
 WORKDIR "/src/Czertainly.Auth"
