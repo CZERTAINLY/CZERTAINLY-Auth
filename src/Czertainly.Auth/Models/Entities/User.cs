@@ -23,9 +23,16 @@ public class User : BaseEntity
 
     [Required]
     [Column("enabled")]
-    public bool Enabled { get; set; }
+    public bool? Enabled { get; set; } = true;
 
     public ICollection<Role> Roles { get; set; }
+
+    //[Required]
+    //[Column("user_auth_info_id")]
+    //public long UserAuthInfoId { get; set; }
+
+    //[ForeignKey(nameof(UserAuthInfoId))]
+    public UserAuthInfo UserAuthInfo { get; set; } = new UserAuthInfo();
 
 
 }

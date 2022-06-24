@@ -2,8 +2,6 @@
 {
     public interface IResourceDto
     {
-        public long Id { get; init; }
-
         public Guid Uuid { get; init; }
     }
 }

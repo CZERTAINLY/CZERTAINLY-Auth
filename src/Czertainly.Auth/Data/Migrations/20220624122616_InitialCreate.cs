@@ -60,7 +60,7 @@ namespace Czertainly.Auth.Data.Migrations
                     first_name = table.Column<string>(type: "text", nullable: true),
                     last_name = table.Column<string>(type: "text", nullable: true),
                     email = table.Column<string>(type: "text", nullable: false),
-                    enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    enabled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     uuid = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -94,6 +94,31 @@ namespace Czertainly.Auth.Data.Migrations
                         column: x => x.role_id,
                         principalSchema: "auth",
                         principalTable: "role",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_auth_info",
+                schema: "auth",
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    certificate_uuid = table.Column<string>(type: "text", nullable: true),
+                    certificate_serial_number = table.Column<string>(type: "text", nullable: true),
+                    certificate_fingerprint = table.Column<string>(type: "text", nullable: true),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_auth_info", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_user_auth_info_user_user_id",
+                        column: x => x.user_id,
+                        principalSchema: "auth",
+                        principalTable: "user",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -166,6 +191,20 @@ namespace Czertainly.Auth.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_user_auth_info_user_id",
+                schema: "auth",
+                table: "user_auth_info",
+                column: "user_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_user_auth_info_uuid",
+                schema: "auth",
+                table: "user_auth_info",
+                column: "uuid",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_user_role_user_id",
                 schema: "auth",
                 table: "user_role",
@@ -176,6 +215,10 @@ namespace Czertainly.Auth.Data.Migrations
         {
             migrationBuilder.DropTable(
                 name: "permission",
+                schema: "auth");
+
+            migrationBuilder.DropTable(
+                name: "user_auth_info",
                 schema: "auth");
 
             migrationBuilder.DropTable(

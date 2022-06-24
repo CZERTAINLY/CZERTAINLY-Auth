@@ -8,21 +8,27 @@ namespace Czertainly.Auth.Common.Data
 {
     public class QueryStringParameters
     {
-        const int MaxPageSize = 50;
+        const int MaxItemsPerPage = 50;
 
-        private int _pageSize = 10;
+        private int _itemsPerPage = 10;
 
+        // pagination
         public int PageNumber { get; set; } = 1;
-        public int PageSize
+        public int ItemsPerPage
         {
             get
             {
-                return _pageSize;
+                return _itemsPerPage;
             }
             set
             {
-                _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
+                _itemsPerPage = (value > MaxItemsPerPage) ? MaxItemsPerPage : value;
             }
         }
+
+        // sorting
+        public string SortBy { get; set; }
+
+        public string SortDirection { get; set; }
     }
 }

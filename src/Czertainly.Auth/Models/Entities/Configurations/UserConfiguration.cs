@@ -7,6 +7,11 @@ namespace Czertainly.Auth.Models.Entities.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
+            builder.Property(u => u.Enabled).HasDefaultValue(true);
+            //builder
+            //    .HasOne(u => u.UserAuthInfo)
+            //    .WithOne(i => i.User)
+            //    .HasForeignKey<UserAuthInfo>(i => i.UserId);
             builder
                 .HasMany(u => u.Roles)
                 .WithMany(r => r.Users)

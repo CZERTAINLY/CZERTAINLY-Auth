@@ -1,6 +1,6 @@
 ﻿namespace Czertainly.Auth.Common.Models.Dto
 {
-    public interface IBaseRequest
+    public interface IRequestDto
     {
     }
 }

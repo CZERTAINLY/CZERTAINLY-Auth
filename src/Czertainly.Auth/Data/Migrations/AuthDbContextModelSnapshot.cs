@@ -18,7 +18,7 @@ namespace Czertainly.Auth.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("auth")
-                .HasAnnotation("ProductVersion", "6.0.5")
+                .HasAnnotation("ProductVersion", "6.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -148,8 +148,11 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("email");
 
-                    b.Property<bool>("Enabled")
+                    b.Property<bool?>("Enabled")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
+                        .HasDefaultValue(true)
                         .HasColumnName("enabled");
 
                     b.Property<string>("FirstName")
@@ -175,6 +178,46 @@ namespace Czertainly.Auth.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("user", "auth");
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.UserAuthInfo", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CertificateFingerprint")
+                        .HasColumnType("text")
+                        .HasColumnName("certificate_fingerprint");
+
+                    b.Property<string>("CertificateSerialNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("certificate_serial_number");
+
+                    b.Property<string>("CertificateUuid")
+                        .HasColumnType("text")
+                        .HasColumnName("certificate_uuid");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("Uuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.HasIndex("Uuid")
+                        .IsUnique();
+
+                    b.ToTable("user_auth_info", "auth");
                 });
 
             modelBuilder.Entity("user_role", b =>
@@ -211,6 +254,17 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.UserAuthInfo", b =>
+                {
+                    b.HasOne("Czertainly.Auth.Models.Entities.User", "User")
+                        .WithOne("UserAuthInfo")
+                        .HasForeignKey("Czertainly.Auth.Models.Entities.UserAuthInfo", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("user_role", b =>
                 {
                     b.HasOne("Czertainly.Auth.Models.Entities.Role", null)
@@ -234,6 +288,12 @@ namespace Czertainly.Auth.Data.Migrations
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Role", b =>
                 {
                     b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.User", b =>
+                {
+                    b.Navigation("UserAuthInfo")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

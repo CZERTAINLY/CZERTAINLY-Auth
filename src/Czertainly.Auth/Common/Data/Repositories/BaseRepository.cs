@@ -29,12 +29,12 @@ namespace Czertainly.Auth.Common.Data.Repositories
 
         public async Task<PagedList<TEntity>> GetAllAsync(QueryStringParameters parameters)
         {
-            return await PagedList<TEntity>.CreateAsync(FindAll(), parameters.PageNumber, parameters.PageSize);
+            return await PagedList<TEntity>.CreateAsync(FindAll(), parameters.PageNumber, parameters.ItemsPerPage);
         }
 
         public async Task<PagedList<TEntity>> GetWhereAsync(QueryStringParameters parameters, Expression<Func<TEntity, bool>> expression)
         {
-            return await PagedList<TEntity>.CreateAsync(FindByCondition(expression), parameters.PageNumber, parameters.PageSize);
+            return await PagedList<TEntity>.CreateAsync(FindByCondition(expression), parameters.PageNumber, parameters.ItemsPerPage);
         }
 
         public async Task<TEntity> GetByIdAsync(Guid id)
