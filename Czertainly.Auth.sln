@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32414.318
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A8CF35EC-2EEE-426E-A6EF-159CD98564C2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{58C073A9-BF20-4460-B022-33A593BF9FAF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{B646B042-A1AA-4C71-A9C1-3D2EF32890C9}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Czertainly.Auth", "src\Czertainly.Auth\Czertainly.Auth.csproj", "{1DE2813C-8588-4968-B4E2-CBDAE238D7A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1DE2813C-8588-4968-B4E2-CBDAE238D7A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DE2813C-8588-4968-B4E2-CBDAE238D7A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DE2813C-8588-4968-B4E2-CBDAE238D7A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DE2813C-8588-4968-B4E2-CBDAE238D7A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1DE2813C-8588-4968-B4E2-CBDAE238D7A4} = {A8CF35EC-2EEE-426E-A6EF-159CD98564C2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F00BC93-FC67-41A4-BE0C-00E3563A7014}
+	EndGlobalSection
+EndGlobal
