@@ -21,7 +21,7 @@ namespace Czertainly.Auth.Common.Services
             _repository = repository;
             _repositoryManager = repositoryManager;
         }
-        public async Task<PagedResponse<TResourceDto>> GetAsync(IQueryRequestDto dto)
+        public virtual async Task<PagedResponse<TResourceDto>> GetAsync(IQueryRequestDto dto)
         {
             var queryParams = _mapper.Map<QueryStringParameters>(dto);
             var users = await _repository.GetAllAsync(queryParams);
@@ -33,7 +33,7 @@ namespace Czertainly.Auth.Common.Services
             };
         }
 
-        public async Task<TResourceDto> CreateAsync(IRequestDto dto)
+        public virtual async Task<TResourceDto> CreateAsync(IRequestDto dto)
         {
             var entity = _mapper.Map<TEntity>(dto);
             _repository.Create(entity);
@@ -42,14 +42,28 @@ namespace Czertainly.Auth.Common.Services
             return _mapper.Map<TResourceDto>(entity);
         }
 
-        public Task DeleteAsync(IEntityKey key)
+        public virtual async Task<TResourceDto> GetDetailAsync(IEntityKey key)
         {
-            throw new NotImplementedException();
+            var entity = await _repository.GetByIdAsync(key);
+
+            return _mapper.Map<TResourceDto>(entity);
         }
 
-        public Task<TResourceDto> UpdateAsync(IEntityKey key, IRequestDto dto)
+        public virtual async Task<TResourceDto> UpdateAsync(IEntityKey key, IRequestDto dto)
         {
-            throw new NotImplementedException();
+            var entity = _mapper.Map<TEntity>(dto);
+            if (key.Uuid.HasValue) entity.Uuid = key.Uuid.Value;
+
+            await _repository.Update(key, entity);
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<TResourceDto>(entity);
+        }
+
+        public virtual async Task DeleteAsync(IEntityKey key)
+        {
+            await _repository.Delete(key);
+            await _repositoryManager.SaveAsync();
         }
     }
 }

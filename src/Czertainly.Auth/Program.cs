@@ -49,9 +49,12 @@ try
     });
 
     // add app services
+    builder.Services.AddScoped<ValidationFilter>();
     builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
     builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddScoped<ValidationFilter>();
+    builder.Services.AddScoped<IRoleService, RoleService>();
+    builder.Services.AddScoped<IEndpointService, EndpointService>();
+    builder.Services.AddScoped<IPermissionService, PermissionService>();
 
     var app = builder.Build();
 

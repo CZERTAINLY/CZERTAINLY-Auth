@@ -1,11 +1,7 @@
-﻿using Czertainly.Auth.Common.Models.Entities;
+﻿using Czertainly.Auth.Common.Exceptions;
+using Czertainly.Auth.Common.Models.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Czertainly.Auth.Common.Data.Repositories
 {
@@ -37,9 +33,9 @@ namespace Czertainly.Auth.Common.Data.Repositories
             return await PagedList<TEntity>.CreateAsync(FindByCondition(expression), parameters.PageNumber, parameters.ItemsPerPage);
         }
 
-        public async Task<TEntity> GetByIdAsync(Guid id)
+        public async Task<TEntity> GetByIdAsync(IEntityKey entityKey)
         {
-            return await RepositoryContext.Set<TEntity>().Where(entity => entity.Id.Equals(id)).FirstOrDefaultAsync();
+            return await GetTrackedEntityByKey(entityKey, "find");
         }
 
         public async Task<TEntity> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
@@ -49,17 +45,33 @@ namespace Czertainly.Auth.Common.Data.Repositories
 
         public void Create(TEntity entity)
         {
-            this.RepositoryContext.Set<TEntity>().Add(entity);
+            RepositoryContext.Set<TEntity>().Add(entity);
         }
 
-        public void Update(TEntity entity)
+        public async Task Update(IEntityKey entityKey, TEntity entity)
         {
-            this.RepositoryContext.Set<TEntity>().Update(entity);
+            var trackedEntity = await GetTrackedEntityByKey(entityKey, "update");
+            entity.Id = trackedEntity.Id;
+            entity.Uuid = trackedEntity.Uuid;
+
+            RepositoryContext.Entry(trackedEntity).CurrentValues.SetValues(entity);
         }
 
-        public void Delete(TEntity entity)
+        public async Task Delete(IEntityKey entityKey)
         {
-            this.RepositoryContext.Set<TEntity>().Remove(entity);
+            var trackedEntity = await GetTrackedEntityByKey(entityKey, "delete");
+            RepositoryContext.Set<TEntity>().Remove(trackedEntity);
+        }
+
+        private async Task<TEntity> GetTrackedEntityByKey(IEntityKey entityKey, string operation)
+        {
+            if (entityKey.Uuid == null && entityKey.Id == null) throw new EntityNotFoundException($"Cannot {operation} entity {typeof(TEntity).Name} with invalid id");
+
+            var context = RepositoryContext.Set<TEntity>();
+            var trackedEntity = entityKey.Uuid.HasValue ? await context.FirstOrDefaultAsync(e => e.Uuid.Equals(entityKey.Uuid)) : await context.FindAsync(entityKey.Id.Value);
+            if (trackedEntity == null) throw new EntityNotFoundException($"Cannot {operation} entity {typeof(TEntity).Name} with id {(entityKey.Uuid.HasValue ? entityKey.Uuid : entityKey.Id.Value)}");
+
+            return trackedEntity;
         }
     }
 }

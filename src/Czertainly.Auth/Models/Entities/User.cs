@@ -23,7 +23,7 @@ public class User : BaseEntity
 
     [Required]
     [Column("enabled")]
-    public bool? Enabled { get; set; } = true;
+    public bool Enabled { get; set; } = true;
 
     public ICollection<Role> Roles { get; set; }
 

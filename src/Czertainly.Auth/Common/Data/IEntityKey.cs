@@ -1,4 +1,4 @@
-﻿namespace Czertainly.Auth.Common.Models.Dto
+﻿namespace Czertainly.Auth.Common.Data
 {
     public interface IEntityKey
     {

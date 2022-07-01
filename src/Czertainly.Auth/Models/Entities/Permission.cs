@@ -21,4 +21,6 @@ public class Permission : BaseEntity
     [ForeignKey(nameof(EndpointId))]
     public Endpoint Endpoint { get; set; }
 
+    public bool AllowAll { get; set; } = true;
+
 }

@@ -6,6 +6,7 @@ namespace Czertainly.Auth.Models.Dto
     public record UserRequestDto : IRequestDto
     {
         [Required]
+        [MinLength(3)]
         public string Username { get; init; }
         
         public string? FirstName { get; init; }
@@ -17,6 +18,8 @@ namespace Czertainly.Auth.Models.Dto
         [Required]
         [EmailAddress]
         public string Email { get; init; }
+
+
 
     }
 }
