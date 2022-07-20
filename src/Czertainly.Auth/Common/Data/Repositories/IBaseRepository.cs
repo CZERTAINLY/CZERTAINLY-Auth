@@ -12,10 +12,12 @@ namespace Czertainly.Auth.Common.Data.Repositories
         Task<PagedList<TEntity>> GetAllAsync(QueryStringParameters parameters);
         Task<PagedList<TEntity>> GetWhereAsync(QueryStringParameters parameters, Expression<Func<TEntity, bool>> expression);
         Task<TEntity> GetByIdAsync(IEntityKey entityKey);
+        Task<IEnumerable<TEntity>> GetByUuidsAsync(IEnumerable<Guid> uuids);
         Task<TEntity> GetByConditionAsync(Expression<Func<TEntity, bool>> expression);
 
         void Create(TEntity entity);
-        Task Update(IEntityKey entityKey, TEntity entity);
-        Task Delete(IEntityKey entityKey);
+        Task UpdateAsync(IEntityKey entityKey, TEntity entity);
+        Task DeleteAsync(IEntityKey entityKey);
+        void Delete(TEntity entity);
     }
 }

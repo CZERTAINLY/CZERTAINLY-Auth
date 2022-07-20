@@ -19,7 +19,8 @@ namespace Czertainly.Auth.Models.Dto
         [EmailAddress]
         public string Email { get; init; }
 
-
+        public Guid? CertificateUuid { get; init; }
+        public string? CertificateFingerprint { get; init; }
 
     }
 }

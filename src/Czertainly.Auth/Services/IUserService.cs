@@ -5,7 +5,7 @@ using Czertainly.Auth.Models.Dto;
 
 namespace Czertainly.Auth.Services
 {
-    public interface IUserService : IResourceService<UserDto>
+    public interface IUserService : IResourceBaseService<UserDto>
     {
         //Task<List<RoleDto>> GetUserRoles(IEntityKey key);
         Task<UserDto> AssignRole(IEntityKey userKey, IEntityKey roleKey);

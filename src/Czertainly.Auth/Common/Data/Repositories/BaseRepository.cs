@@ -38,6 +38,11 @@ namespace Czertainly.Auth.Common.Data.Repositories
             return await GetTrackedEntityByKey(entityKey, "find");
         }
 
+        public async Task<IEnumerable<TEntity>> GetByUuidsAsync(IEnumerable<Guid> uuids)
+        {
+            return await RepositoryContext.Set<TEntity>().Where(e => uuids.Contains(e.Uuid)).ToListAsync();
+        }
+
         public async Task<TEntity> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
         {
             return await RepositoryContext.Set<TEntity>().Where(expression).FirstOrDefaultAsync();
@@ -48,7 +53,7 @@ namespace Czertainly.Auth.Common.Data.Repositories
             RepositoryContext.Set<TEntity>().Add(entity);
         }
 
-        public async Task Update(IEntityKey entityKey, TEntity entity)
+        public async Task UpdateAsync(IEntityKey entityKey, TEntity entity)
         {
             var trackedEntity = await GetTrackedEntityByKey(entityKey, "update");
             entity.Id = trackedEntity.Id;
@@ -57,10 +62,15 @@ namespace Czertainly.Auth.Common.Data.Repositories
             RepositoryContext.Entry(trackedEntity).CurrentValues.SetValues(entity);
         }
 
-        public async Task Delete(IEntityKey entityKey)
+        public async Task DeleteAsync(IEntityKey entityKey)
         {
             var trackedEntity = await GetTrackedEntityByKey(entityKey, "delete");
             RepositoryContext.Set<TEntity>().Remove(trackedEntity);
+        }
+
+        public void Delete(TEntity entity)
+        {
+            RepositoryContext.Set<TEntity>().Remove(entity);
         }
 
         private async Task<TEntity> GetTrackedEntityByKey(IEntityKey entityKey, string operation)

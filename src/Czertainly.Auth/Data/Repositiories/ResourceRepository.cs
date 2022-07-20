@@ -4,9 +4,9 @@ using Czertainly.Auth.Models.Entities;
 
 namespace Czertainly.Auth.Data.Repositiories
 {
-    public class RoleRepository : BaseRepository<Role>, IRoleRepository
+    public class ResourceRepository : BaseRepository<Resource>, IResourceRepository
     {
-        public RoleRepository(AuthDbContext repositoryContext) : base(repositoryContext)
+        public ResourceRepository(AuthDbContext repositoryContext) : base(repositoryContext)
         {
         }
     }

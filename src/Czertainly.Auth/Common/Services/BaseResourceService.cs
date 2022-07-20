@@ -7,7 +7,7 @@ using Czertainly.Auth.Data.Contracts;
 
 namespace Czertainly.Auth.Common.Services
 {
-    public abstract class ResourceService<TEntity, TResourceDto> : IResourceService<TResourceDto>
+    public abstract class BaseResourceService<TEntity, TResourceDto> : IResourceBaseService<TResourceDto>
         where TEntity : class, IBaseEntity, new()
         where TResourceDto : IResourceDto, new()
     {
@@ -15,7 +15,7 @@ namespace Czertainly.Auth.Common.Services
         protected readonly IBaseRepository<TEntity> _repository;
         protected readonly IRepositoryManager _repositoryManager;
 
-        public ResourceService(IRepositoryManager repositoryManager, IBaseRepository<TEntity> repository, IMapper mapper)
+        public BaseResourceService(IRepositoryManager repositoryManager, IBaseRepository<TEntity> repository, IMapper mapper)
         {
             _mapper = mapper;
             _repository = repository;
@@ -54,7 +54,7 @@ namespace Czertainly.Auth.Common.Services
             var entity = _mapper.Map<TEntity>(dto);
             if (key.Uuid.HasValue) entity.Uuid = key.Uuid.Value;
 
-            await _repository.Update(key, entity);
+            await _repository.UpdateAsync(key, entity);
             await _repositoryManager.SaveAsync();
 
             return _mapper.Map<TResourceDto>(entity);
@@ -62,7 +62,7 @@ namespace Czertainly.Auth.Common.Services
 
         public virtual async Task DeleteAsync(IEntityKey key)
         {
-            await _repository.Delete(key);
+            await _repository.DeleteAsync(key);
             await _repositoryManager.SaveAsync();
         }
     }

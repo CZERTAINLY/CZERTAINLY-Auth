@@ -4,20 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Czertainly.Auth.Models.Entities;
 
-[Table("endpoint")]
-public class Endpoint : BaseEntity
+[Table("action")]
+public class Action : BaseEntity
 {
     [Required]
     [Column("name")]
     public string Name { get; set; }
-
-    [Required]
-    [Column("method")]
-    public string Method { get; set; }
-
-    [Required]
-    [Column("route_template")]
-    public string RouteTemplate { get; set; }
 
     [Required]
     [Column("resource_id")]
@@ -26,11 +18,6 @@ public class Endpoint : BaseEntity
     [ForeignKey(nameof(ResourceId))]
     public Resource Resource { get; set; }
 
-    [Required]
-    [Column("action_id")]
-    public long ActionId { get; set; }
-
-    [ForeignKey(nameof(ActionId))]
-    public Action Action { get; set; }
-
+    public ICollection<Endpoint> Endpoints { get; set; }
+    public ICollection<Permission> Permissions { get; set; }
 }

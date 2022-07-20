@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Czertainly.Auth.Data.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20220624122616_InitialCreate")]
+    [Migration("20220716235608_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,38 @@ namespace Czertainly.Auth.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<long>("ResourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("resource_id");
+
+                    b.Property<Guid>("Uuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResourceId");
+
+                    b.HasIndex("Uuid")
+                        .IsUnique();
+
+                    b.ToTable("action", "auth");
+                });
+
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Endpoint", b =>
                 {
                     b.Property<long>("Id")
@@ -34,9 +66,9 @@ namespace Czertainly.Auth.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("ActionName")
-                        .HasColumnType("text")
-                        .HasColumnName("action_name");
+                    b.Property<long>("ActionId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("action_id");
 
                     b.Property<string>("Method")
                         .IsRequired()
@@ -48,24 +80,24 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.Property<string>("ResourceName")
-                        .HasColumnType("text")
-                        .HasColumnName("resource_name");
+                    b.Property<long>("ResourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("resource_id");
 
                     b.Property<string>("RouteTemplate")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("route_template");
 
-                    b.Property<string>("ServiceName")
-                        .HasColumnType("text")
-                        .HasColumnName("service_name");
-
                     b.Property<Guid>("Uuid")
                         .HasColumnType("uuid")
                         .HasColumnName("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActionId");
+
+                    b.HasIndex("ResourceId");
 
                     b.HasIndex("Uuid")
                         .IsUnique();
@@ -82,9 +114,23 @@ namespace Czertainly.Auth.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("EndpointId")
+                    b.Property<long?>("ActionId")
                         .HasColumnType("bigint")
-                        .HasColumnName("endpoint_id");
+                        .HasColumnName("action_id");
+
+                    b.Property<bool>("IsAllowed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_allowed");
+
+                    b.Property<Guid?>("ObjectUuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("object_uuid");
+
+                    b.Property<long?>("ResourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("resource_id");
 
                     b.Property<long>("RoleId")
                         .HasColumnType("bigint")
@@ -96,7 +142,9 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EndpointId");
+                    b.HasIndex("ActionId");
+
+                    b.HasIndex("ResourceId");
 
                     b.HasIndex("RoleId");
 
@@ -104,6 +152,36 @@ namespace Czertainly.Auth.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("permission", "auth");
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Resource", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ListingEndpoint")
+                        .HasColumnType("text")
+                        .HasColumnName("listing_endpoint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("Uuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Uuid")
+                        .IsUnique();
+
+                    b.ToTable("resource", "auth");
                 });
 
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Role", b =>
@@ -145,13 +223,20 @@ namespace Czertainly.Auth.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("CertificateFingerprint")
+                        .HasColumnType("text")
+                        .HasColumnName("certificate_fingerprint");
+
+                    b.Property<Guid?>("CertificateUuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("certificate_uuid");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("email");
 
-                    b.Property<bool?>("Enabled")
-                        .IsRequired()
+                    b.Property<bool>("Enabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true)
@@ -182,46 +267,6 @@ namespace Czertainly.Auth.Data.Migrations
                     b.ToTable("user", "auth");
                 });
 
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.UserAuthInfo", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("CertificateFingerprint")
-                        .HasColumnType("text")
-                        .HasColumnName("certificate_fingerprint");
-
-                    b.Property<string>("CertificateSerialNumber")
-                        .HasColumnType("text")
-                        .HasColumnName("certificate_serial_number");
-
-                    b.Property<string>("CertificateUuid")
-                        .HasColumnType("text")
-                        .HasColumnName("certificate_uuid");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("user_id");
-
-                    b.Property<Guid>("Uuid")
-                        .HasColumnType("uuid")
-                        .HasColumnName("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.HasIndex("Uuid")
-                        .IsUnique();
-
-                    b.ToTable("user_auth_info", "auth");
-                });
-
             modelBuilder.Entity("user_role", b =>
                 {
                     b.Property<long>("role_id")
@@ -237,13 +282,45 @@ namespace Czertainly.Auth.Data.Migrations
                     b.ToTable("user_role", "auth");
                 });
 
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Permission", b =>
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
                 {
-                    b.HasOne("Czertainly.Auth.Models.Entities.Endpoint", "Endpoint")
-                        .WithMany("Permissions")
-                        .HasForeignKey("EndpointId")
+                    b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
+                        .WithMany("Actions")
+                        .HasForeignKey("ResourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Endpoint", b =>
+                {
+                    b.HasOne("Czertainly.Auth.Models.Entities.Action", "Action")
+                        .WithMany("Endpoints")
+                        .HasForeignKey("ActionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
+                        .WithMany("Endpoints")
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Action");
+
+                    b.Navigation("Resource");
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Permission", b =>
+                {
+                    b.HasOne("Czertainly.Auth.Models.Entities.Action", "Action")
+                        .WithMany("Permissions")
+                        .HasForeignKey("ActionId");
+
+                    b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
+                        .WithMany("Permissions")
+                        .HasForeignKey("ResourceId");
 
                     b.HasOne("Czertainly.Auth.Models.Entities.Role", "Role")
                         .WithMany("Permissions")
@@ -251,20 +328,11 @@ namespace Czertainly.Auth.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Endpoint");
+                    b.Navigation("Action");
+
+                    b.Navigation("Resource");
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.UserAuthInfo", b =>
-                {
-                    b.HasOne("Czertainly.Auth.Models.Entities.User", "User")
-                        .WithOne("UserAuthInfo")
-                        .HasForeignKey("Czertainly.Auth.Models.Entities.UserAuthInfo", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("user_role", b =>
@@ -282,20 +350,25 @@ namespace Czertainly.Auth.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Endpoint", b =>
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
                 {
+                    b.Navigation("Endpoints");
+
+                    b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Resource", b =>
+                {
+                    b.Navigation("Actions");
+
+                    b.Navigation("Endpoints");
+
                     b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Role", b =>
                 {
                     b.Navigation("Permissions");
-                });
-
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.User", b =>
-                {
-                    b.Navigation("UserAuthInfo")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

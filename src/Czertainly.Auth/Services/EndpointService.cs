@@ -8,7 +8,7 @@ using Endpoint = Czertainly.Auth.Models.Entities.Endpoint;
 
 namespace Czertainly.Auth.Services
 {
-    public class EndpointService : ResourceService<Endpoint, EndpointDto>, IEndpointService
+    public class EndpointService : BaseResourceService<Endpoint, EndpointDto>, IEndpointService
     {
 
         public EndpointService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Endpoint, mapper)

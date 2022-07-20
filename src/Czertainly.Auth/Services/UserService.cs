@@ -8,7 +8,7 @@ using Czertainly.Auth.Models.Entities;
 
 namespace Czertainly.Auth.Services
 {
-    public class UserService : ResourceService<User, UserDto>, IUserService
+    public class UserService : BaseResourceService<User, UserDto>, IUserService
     {
         public UserService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.User, mapper)
         {

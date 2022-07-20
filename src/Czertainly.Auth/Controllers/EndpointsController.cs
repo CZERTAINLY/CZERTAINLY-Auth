@@ -26,42 +26,42 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
-        [ServiceFilter(typeof(ValidationFilter))]
-        public async Task<ActionResult<EndpointDto>> CreateEndpointAsync([FromBody] EndpointRequestDto endpointRequestDto)
-        {
-            var result = await _endpointService.CreateAsync(endpointRequestDto);
+        //[HttpPost]
+        //[ServiceFilter(typeof(ValidationFilter))]
+        //public async Task<ActionResult<EndpointDto>> CreateEndpointAsync([FromBody] EndpointRequestDto endpointRequestDto)
+        //{
+        //    var result = await _endpointService.CreateAsync(endpointRequestDto);
 
-            return Created("auth/endpoints", result);
-        }
+        //    return Created("auth/endpoints", result);
+        //}
 
-        [HttpGet("{endpointUuid}")]
-        public async Task<ActionResult<EndpointDto>> GetEndpointAsync([FromRoute] Guid endpointUuid)
-        {
-            var entityKey = new EntityKey { Uuid = endpointUuid };
-            var result = await _endpointService.GetDetailAsync(entityKey);
+        //[HttpGet("{endpointUuid}")]
+        //public async Task<ActionResult<EndpointDto>> GetEndpointAsync([FromRoute] Guid endpointUuid)
+        //{
+        //    var entityKey = new EntityKey { Uuid = endpointUuid };
+        //    var result = await _endpointService.GetDetailAsync(entityKey);
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
 
-        [HttpPut("{endpointUuid}")]
-        [ServiceFilter(typeof(ValidationFilter))]
-        public async Task<ActionResult<EndpointDto>> UpdateEndpointAsync([FromRoute] Guid endpointUuid, [FromBody] EndpointRequestDto endpointRequestDto)
-        {
-            var entityKey = new EntityKey { Uuid = endpointUuid };
-            var result = await _endpointService.UpdateAsync(entityKey, endpointRequestDto);
+        //[HttpPut("{endpointUuid}")]
+        //[ServiceFilter(typeof(ValidationFilter))]
+        //public async Task<ActionResult<EndpointDto>> UpdateEndpointAsync([FromRoute] Guid endpointUuid, [FromBody] EndpointRequestDto endpointRequestDto)
+        //{
+        //    var entityKey = new EntityKey { Uuid = endpointUuid };
+        //    var result = await _endpointService.UpdateAsync(entityKey, endpointRequestDto);
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
 
-        [HttpDelete("{endpointUuid}")]
-        public async Task<ActionResult<EndpointDto>> DeleteEndpointAsync([FromRoute] Guid endpointUuid)
-        {
-            var entityKey = new EntityKey { Uuid = endpointUuid };
-            await _endpointService.DeleteAsync(entityKey);
+        //[HttpDelete("{endpointUuid}")]
+        //public async Task<ActionResult<EndpointDto>> DeleteEndpointAsync([FromRoute] Guid endpointUuid)
+        //{
+        //    var entityKey = new EntityKey { Uuid = endpointUuid };
+        //    await _endpointService.DeleteAsync(entityKey);
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         [HttpPost("sync")]
         [ServiceFilter(typeof(ValidationFilter))]

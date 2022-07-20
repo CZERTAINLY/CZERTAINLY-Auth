@@ -25,14 +25,12 @@ public class User : BaseEntity
     [Column("enabled")]
     public bool Enabled { get; set; } = true;
 
+    [Column("certificate_uuid")]
+    public Guid? CertificateUuid { get; set; }
+
+    [Column("certificate_fingerprint")]
+    public string? CertificateFingerprint { get; set; }
+
     public ICollection<Role> Roles { get; set; }
-
-    //[Required]
-    //[Column("user_auth_info_id")]
-    //public long UserAuthInfoId { get; set; }
-
-    //[ForeignKey(nameof(UserAuthInfoId))]
-    public UserAuthInfo UserAuthInfo { get; set; } = new UserAuthInfo();
-
 
 }

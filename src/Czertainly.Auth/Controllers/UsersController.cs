@@ -63,31 +63,31 @@ namespace Czertainly.Auth.Controllers
             return NoContent();
         }
 
-        [HttpGet("{userUuid}/roles")]
-        public async Task<ActionResult<UserDto>> GetRoles([FromRoute] Guid userUuid)
-        {
-            var entityKey = new EntityKey { Uuid = userUuid };
-            var result = await _userService.UpdateAsync(entityKey, userRequestDto);
+        //[HttpGet("{userUuid}/roles")]
+        //public async Task<ActionResult<UserDto>> GetRoles([FromRoute] Guid userUuid)
+        //{
+        //    var entityKey = new EntityKey { Uuid = userUuid };
+        //    var result = await _userService.UpdateAsync(entityKey, userRequestDto);
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
 
-        [HttpPatch("{userUuid}/roles")]
-        public async Task<ActionResult<UserDto>> AssignRoles([FromRoute] Guid userUuid, [FromBody] List<Guid> roleUuids)
-        {
-            var entityKey = new EntityKey { Uuid = userUuid };
-            var result = await _userService.UpdateAsync(entityKey, userRequestDto);
+        //[HttpPatch("{userUuid}/roles")]
+        //public async Task<ActionResult<UserDto>> AssignRoles([FromRoute] Guid userUuid, [FromBody] IEnumerable<Guid> roleUuids)
+        //{
+        //    var entityKey = new EntityKey { Uuid = userUuid };
+        //    var result = await _userService.UpdateAsync(entityKey, userRequestDto);
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
 
-        [HttpPut("{userUuid}/roles/{roleUuid}")]
-        public async Task<ActionResult<UserDto>> AssignRole([FromRoute] Guid userUuid, [FromBody] UserRequestDto userRequestDto)
-        {
-            var entityKey = new EntityKey { Uuid = userUuid };
-            var result = await _userService.UpdateAsync(entityKey, userRequestDto);
+        //[HttpPut("{userUuid}/roles/{roleUuid}")]
+        //public async Task<ActionResult<UserDto>> AssignRole([FromRoute] Guid userUuid, [FromRoute] Guid roleUuid)
+        //{
+        //    var entityKey = new EntityKey { Uuid = userUuid };
+        //    var result = await _userService.UpdateAsync(entityKey, userRequestDto);
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
     }
 }
