@@ -27,10 +27,16 @@ namespace Czertainly.Auth.Services
         {
             EndpointDto endpointDto;
             var result = new EndpointsSyncResultDto();
+
+            var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => $"{a.ResourceId}.{a.Name}");
+            var endpointsMapping = await _repositoryManager.Endpoint.GetDictionaryMap(e => $"{e.Method} {e.RouteTemplate}");
             foreach (var endpointRequestDto in endpoints)
             {
-                if (EndpointExists(endpointRequestDto, out var storedEntity))
+                var endpointMapKey = $"{endpointRequestDto.Method} {endpointRequestDto.RouteTemplate}";
+                if (endpointsMapping.TryGetValue(endpointMapKey, out var storedEntity))
                 {
+                    // check if to update resource and action
                     endpointDto = await UpdateAsync(new EntityKey { Id = storedEntity.Id, Uuid = storedEntity.Uuid }, endpointRequestDto);
                     result.UpdatedEndpoints.Add(endpointDto);
                 }

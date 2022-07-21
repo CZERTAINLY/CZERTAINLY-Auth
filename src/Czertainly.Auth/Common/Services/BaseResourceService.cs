@@ -44,7 +44,7 @@ namespace Czertainly.Auth.Common.Services
 
         public virtual async Task<TResourceDto> GetDetailAsync(IEntityKey key)
         {
-            var entity = await _repository.GetByIdAsync(key);
+            var entity = await _repository.GetByKeyAsync(key);
 
             return _mapper.Map<TResourceDto>(entity);
         }

@@ -13,6 +13,8 @@ namespace Czertainly.Auth.Common.Data.Repositories
             this.RepositoryContext = repositoryContext;
         }
 
+        #region Get operations for read-only purpose (No Tracking)
+
         public IQueryable<TEntity> FindAll()
         {
             return RepositoryContext.Set<TEntity>().AsNoTracking();
@@ -33,9 +35,16 @@ namespace Czertainly.Auth.Common.Data.Repositories
             return await PagedList<TEntity>.CreateAsync(FindByCondition(expression), parameters.PageNumber, parameters.ItemsPerPage);
         }
 
-        public async Task<TEntity> GetByIdAsync(IEntityKey entityKey)
+        #endregion
+
+        public async Task<TEntity> GetByKeyAsync(IEntityKey entityKey)
         {
             return await GetTrackedEntityByKey(entityKey, "find");
+        }
+
+        public async Task<TEntity> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
+        {
+            return await RepositoryContext.Set<TEntity>().Where(expression).FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<TEntity>> GetByUuidsAsync(IEnumerable<Guid> uuids)
@@ -43,10 +52,14 @@ namespace Czertainly.Auth.Common.Data.Repositories
             return await RepositoryContext.Set<TEntity>().Where(e => uuids.Contains(e.Uuid)).ToListAsync();
         }
 
-        public async Task<TEntity> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
+        public async Task<Dictionary<TKey, TEntity>> GetDictionaryMap<TKey>(Func<TEntity, TKey> keySelector, Expression<Func<TEntity, bool>>? expression = null) where TKey : notnull
         {
-            return await RepositoryContext.Set<TEntity>().Where(expression).FirstOrDefaultAsync();
+            var context = RepositoryContext.Set<TEntity>();
+            if (expression != null) context.Where(expression);
+            return await context.ToDictionaryAsync(keySelector);
         }
+
+        #region CRUD operations
 
         public void Create(TEntity entity)
         {
@@ -73,6 +86,10 @@ namespace Czertainly.Auth.Common.Data.Repositories
             RepositoryContext.Set<TEntity>().Remove(entity);
         }
 
+        #endregion
+
+        #region Private methods
+
         private async Task<TEntity> GetTrackedEntityByKey(IEntityKey entityKey, string operation)
         {
             if (entityKey.Uuid == null && entityKey.Id == null) throw new EntityNotFoundException($"Cannot {operation} entity {typeof(TEntity).Name} with invalid id");
@@ -83,5 +100,8 @@ namespace Czertainly.Auth.Common.Data.Repositories
 
             return trackedEntity;
         }
+
+        #endregion
+
     }
 }
