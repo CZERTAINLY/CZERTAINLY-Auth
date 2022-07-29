@@ -29,6 +29,6 @@ namespace Czertainly.Auth.Common.Data
         // sorting
         public string SortBy { get; set; }
 
-        public string SortDirection { get; set; }
+        public bool SortAscending { get; set; }
     }
 }

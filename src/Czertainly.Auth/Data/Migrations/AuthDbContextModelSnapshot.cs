@@ -18,7 +18,7 @@ namespace Czertainly.Auth.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("auth")
-                .HasAnnotation("ProductVersion", "6.0.6")
+                .HasAnnotation("ProductVersion", "6.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -28,7 +28,8 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
@@ -43,14 +44,12 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.Property<Guid>("Uuid")
                         .HasColumnType("uuid")
-                        .HasColumnName("uuid");
+                        .HasColumnName("uuid")
+                        .HasColumnOrder(1);
 
                     b.HasKey("Id");
 
                     b.HasIndex("ResourceId");
-
-                    b.HasIndex("Uuid")
-                        .IsUnique();
 
                     b.ToTable("action", "auth");
                 });
@@ -60,7 +59,8 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
@@ -89,16 +89,14 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.Property<Guid>("Uuid")
                         .HasColumnType("uuid")
-                        .HasColumnName("uuid");
+                        .HasColumnName("uuid")
+                        .HasColumnOrder(1);
 
                     b.HasKey("Id");
 
                     b.HasIndex("ActionId");
 
                     b.HasIndex("ResourceId");
-
-                    b.HasIndex("Uuid")
-                        .IsUnique();
 
                     b.ToTable("endpoint", "auth");
                 });
@@ -108,7 +106,8 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
@@ -136,7 +135,8 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.Property<Guid>("Uuid")
                         .HasColumnType("uuid")
-                        .HasColumnName("uuid");
+                        .HasColumnName("uuid")
+                        .HasColumnOrder(1);
 
                     b.HasKey("Id");
 
@@ -146,9 +146,6 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("Uuid")
-                        .IsUnique();
-
                     b.ToTable("permission", "auth");
                 });
 
@@ -157,7 +154,8 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
@@ -172,11 +170,12 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.Property<Guid>("Uuid")
                         .HasColumnType("uuid")
-                        .HasColumnName("uuid");
+                        .HasColumnName("uuid")
+                        .HasColumnOrder(1);
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Uuid")
+                    b.HasIndex("Name")
                         .IsUnique();
 
                     b.ToTable("resource", "auth");
@@ -187,7 +186,8 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
@@ -202,12 +202,10 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.Property<Guid>("Uuid")
                         .HasColumnType("uuid")
-                        .HasColumnName("uuid");
+                        .HasColumnName("uuid")
+                        .HasColumnOrder(1);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Uuid")
-                        .IsUnique();
 
                     b.ToTable("role", "auth");
                 });
@@ -217,7 +215,8 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasColumnName("id");
+                        .HasColumnName("id")
+                        .HasColumnOrder(0);
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
@@ -255,12 +254,10 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.Property<Guid>("Uuid")
                         .HasColumnType("uuid")
-                        .HasColumnName("uuid");
+                        .HasColumnName("uuid")
+                        .HasColumnOrder(1);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Uuid")
-                        .IsUnique();
 
                     b.ToTable("user", "auth");
                 });
@@ -294,13 +291,13 @@ namespace Czertainly.Auth.Data.Migrations
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Endpoint", b =>
                 {
                     b.HasOne("Czertainly.Auth.Models.Entities.Action", "Action")
-                        .WithMany("Endpoints")
+                        .WithMany()
                         .HasForeignKey("ActionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
-                        .WithMany("Endpoints")
+                        .WithMany()
                         .HasForeignKey("ResourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -350,16 +347,12 @@ namespace Czertainly.Auth.Data.Migrations
 
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
                 {
-                    b.Navigation("Endpoints");
-
                     b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Resource", b =>
                 {
                     b.Navigation("Actions");
-
-                    b.Navigation("Endpoints");
 
                     b.Navigation("Permissions");
                 });

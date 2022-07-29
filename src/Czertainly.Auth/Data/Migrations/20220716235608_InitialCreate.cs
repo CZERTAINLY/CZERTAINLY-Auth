@@ -20,9 +20,9 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    listing_endpoint = table.Column<string>(type: "text", nullable: true),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    listing_endpoint = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -36,9 +36,9 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    description = table.Column<string>(type: "text", nullable: true),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    description = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -52,14 +52,14 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     username = table.Column<string>(type: "text", nullable: false),
                     first_name = table.Column<string>(type: "text", nullable: true),
                     last_name = table.Column<string>(type: "text", nullable: true),
                     email = table.Column<string>(type: "text", nullable: false),
                     enabled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     certificate_uuid = table.Column<Guid>(type: "uuid", nullable: true),
-                    certificate_fingerprint = table.Column<string>(type: "text", nullable: true),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    certificate_fingerprint = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -73,9 +73,9 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    resource_id = table.Column<long>(type: "bigint", nullable: false),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    resource_id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -123,12 +123,12 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     method = table.Column<string>(type: "text", nullable: false),
                     route_template = table.Column<string>(type: "text", nullable: false),
                     resource_id = table.Column<long>(type: "bigint", nullable: false),
-                    action_id = table.Column<long>(type: "bigint", nullable: false),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    action_id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,12 +156,12 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     role_id = table.Column<long>(type: "bigint", nullable: false),
                     resource_id = table.Column<long>(type: "bigint", nullable: true),
                     action_id = table.Column<long>(type: "bigint", nullable: true),
                     object_uuid = table.Column<Guid>(type: "uuid", nullable: true),
-                    is_allowed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    is_allowed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -194,13 +194,6 @@ namespace Czertainly.Auth.Data.Migrations
                 column: "resource_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_action_uuid",
-                schema: "auth",
-                table: "action",
-                column: "uuid",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_endpoint_action_id",
                 schema: "auth",
                 table: "endpoint",
@@ -211,13 +204,6 @@ namespace Czertainly.Auth.Data.Migrations
                 schema: "auth",
                 table: "endpoint",
                 column: "resource_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_endpoint_uuid",
-                schema: "auth",
-                table: "endpoint",
-                column: "uuid",
-                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_permission_action_id",
@@ -238,31 +224,10 @@ namespace Czertainly.Auth.Data.Migrations
                 column: "role_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_permission_uuid",
-                schema: "auth",
-                table: "permission",
-                column: "uuid",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_resource_uuid",
+                name: "IX_resource_name",
                 schema: "auth",
                 table: "resource",
-                column: "uuid",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_role_uuid",
-                schema: "auth",
-                table: "role",
-                column: "uuid",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_uuid",
-                schema: "auth",
-                table: "user",
-                column: "uuid",
+                column: "name",
                 unique: true);
 
             migrationBuilder.CreateIndex(

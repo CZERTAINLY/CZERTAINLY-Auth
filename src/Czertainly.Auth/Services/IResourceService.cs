@@ -4,7 +4,7 @@ using Czertainly.Auth.Models.Dto;
 
 namespace Czertainly.Auth.Services
 {
-    public interface IResourceService : IResourceBaseService<ResourceDto>
+    public interface IResourceService : ICrudService<ResourceDto, ResourceDetailDto>
     {
     }
 }

@@ -11,11 +11,19 @@ namespace Czertainly.Auth.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private IUserService _userService;
+        private readonly IUserService _userService;
 
         public UsersController(IUserService userService)
         {
             _userService = userService;
+        }
+
+        [HttpGet("profile")]
+        public async Task<ActionResult<UserProfileDto>> GetUserProfile([FromHeader] UserProfileRequestDto dto)
+        {
+            var result = await _userService.GetUserProfileAsync(dto);
+
+            return Ok(result);
         }
 
         [HttpGet]
@@ -36,9 +44,9 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpGet("{userUuid}")]
-        public async Task<ActionResult<UserDto>> GetUserAsync([FromRoute] Guid userUuid)
+        public async Task<ActionResult<UserDetailDto>> GetUserAsync([FromRoute] Guid userUuid)
         {
-            var entityKey = new EntityKey { Uuid = userUuid };
+            var entityKey = new EntityKey(userUuid);
             var result = await _userService.GetDetailAsync(entityKey);
 
             return Ok(result);
@@ -48,7 +56,7 @@ namespace Czertainly.Auth.Controllers
         [ServiceFilter(typeof(ValidationFilter))]
         public async Task<ActionResult<UserDto>> UpdateUserAsync([FromRoute] Guid userUuid, [FromBody] UserRequestDto userRequestDto)
         {
-            var entityKey = new EntityKey { Uuid = userUuid };
+            var entityKey = new EntityKey(userUuid);
             var result = await _userService.UpdateAsync(entityKey, userRequestDto);
 
             return Ok(result);
@@ -57,37 +65,26 @@ namespace Czertainly.Auth.Controllers
         [HttpDelete("{userUuid}")]
         public async Task<ActionResult<UserDto>> DeleteUserAsync([FromRoute] Guid userUuid)
         {
-            var entityKey = new EntityKey { Uuid = userUuid };
+            var entityKey = new EntityKey(userUuid);
             await _userService.DeleteAsync(entityKey);
 
             return NoContent();
         }
 
-        //[HttpGet("{userUuid}/roles")]
-        //public async Task<ActionResult<UserDto>> GetRoles([FromRoute] Guid userUuid)
-        //{
-        //    var entityKey = new EntityKey { Uuid = userUuid };
-        //    var result = await _userService.UpdateAsync(entityKey, userRequestDto);
+        [HttpPatch("{userUuid}/roles")]
+        public async Task<ActionResult<UserDetailDto>> AssignRolesAsync([FromRoute] Guid userUuid, [FromBody] IEnumerable<Guid> roleUuids)
+        {
+            var result = await _userService.AssignRolesAsync(new EntityKey(userUuid), roleUuids);
 
-        //    return Ok(result);
-        //}
+            return Ok(result);
+        }
 
-        //[HttpPatch("{userUuid}/roles")]
-        //public async Task<ActionResult<UserDto>> AssignRoles([FromRoute] Guid userUuid, [FromBody] IEnumerable<Guid> roleUuids)
-        //{
-        //    var entityKey = new EntityKey { Uuid = userUuid };
-        //    var result = await _userService.UpdateAsync(entityKey, userRequestDto);
+        [HttpPut("{userUuid}/roles/{roleUuid}")]
+        public async Task<ActionResult<UserDetailDto>> AssignRoleAsync([FromRoute] Guid userUuid, [FromRoute] Guid roleUuid)
+        {
+            var result = await _userService.AssignRoleAsync(new EntityKey(userUuid), new EntityKey(roleUuid));
 
-        //    return Ok(result);
-        //}
-
-        //[HttpPut("{userUuid}/roles/{roleUuid}")]
-        //public async Task<ActionResult<UserDto>> AssignRole([FromRoute] Guid userUuid, [FromRoute] Guid roleUuid)
-        //{
-        //    var entityKey = new EntityKey { Uuid = userUuid };
-        //    var result = await _userService.UpdateAsync(entityKey, userRequestDto);
-
-        //    return Ok(result);
-        //}
+            return Ok(result);
+        }
     }
 }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record UserRequestDto : IRequestDto
+    public record UserRequestDto : ICrudRequestDto
     {
         [Required]
         [MinLength(3)]

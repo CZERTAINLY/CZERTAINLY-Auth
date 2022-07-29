@@ -18,6 +18,5 @@ public class Action : BaseEntity
     [ForeignKey(nameof(ResourceId))]
     public Resource Resource { get; set; }
 
-    public ICollection<Endpoint> Endpoints { get; set; }
     public ICollection<Permission> Permissions { get; set; }
 }

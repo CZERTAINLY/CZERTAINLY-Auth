@@ -7,49 +7,50 @@ using Czertainly.Auth.Data.Contracts;
 
 namespace Czertainly.Auth.Common.Services
 {
-    public abstract class BaseResourceService<TEntity, TResourceDto> : IResourceBaseService<TResourceDto>
+    public abstract class CrudService<TEntity, TResponseDto, TDetailResponseDto> : ICrudService<TResponseDto, TDetailResponseDto>
         where TEntity : class, IBaseEntity, new()
-        where TResourceDto : IResourceDto, new()
+        where TResponseDto : ICrudResponseDto, new()
+        where TDetailResponseDto : ICrudResponseDto, new()
     {
         protected readonly IMapper _mapper;
         protected readonly IBaseRepository<TEntity> _repository;
         protected readonly IRepositoryManager _repositoryManager;
 
-        public BaseResourceService(IRepositoryManager repositoryManager, IBaseRepository<TEntity> repository, IMapper mapper)
+        public CrudService(IRepositoryManager repositoryManager, IBaseRepository<TEntity> repository, IMapper mapper)
         {
             _mapper = mapper;
             _repository = repository;
             _repositoryManager = repositoryManager;
         }
-        public virtual async Task<PagedResponse<TResourceDto>> GetAsync(IQueryRequestDto dto)
+        public virtual async Task<PagedResponse<TResponseDto>> GetAsync(IQueryRequestDto dto)
         {
             var queryParams = _mapper.Map<QueryStringParameters>(dto);
             var users = await _repository.GetAllAsync(queryParams);
 
-            return new PagedResponse<TResourceDto>
+            return new PagedResponse<TResponseDto>
             {
-                Data = _mapper.Map<List<TResourceDto>>(users),
+                Data = _mapper.Map<List<TResponseDto>>(users),
                 Links = _mapper.Map<PagingMetadata>(users),
             };
         }
 
-        public virtual async Task<TResourceDto> CreateAsync(IRequestDto dto)
+        public virtual async Task<TResponseDto> CreateAsync(ICrudRequestDto dto)
         {
             var entity = _mapper.Map<TEntity>(dto);
             _repository.Create(entity);
             await _repositoryManager.SaveAsync();
 
-            return _mapper.Map<TResourceDto>(entity);
+            return _mapper.Map<TResponseDto>(entity);
         }
 
-        public virtual async Task<TResourceDto> GetDetailAsync(IEntityKey key)
+        public virtual async Task<TDetailResponseDto> GetDetailAsync(IEntityKey key)
         {
             var entity = await _repository.GetByKeyAsync(key);
 
-            return _mapper.Map<TResourceDto>(entity);
+            return _mapper.Map<TDetailResponseDto>(entity);
         }
 
-        public virtual async Task<TResourceDto> UpdateAsync(IEntityKey key, IRequestDto dto)
+        public virtual async Task<TResponseDto> UpdateAsync(IEntityKey key, ICrudRequestDto dto)
         {
             var entity = _mapper.Map<TEntity>(dto);
             if (key.Uuid.HasValue) entity.Uuid = key.Uuid.Value;
@@ -57,7 +58,7 @@ namespace Czertainly.Auth.Common.Services
             await _repository.UpdateAsync(key, entity);
             await _repositoryManager.SaveAsync();
 
-            return _mapper.Map<TResourceDto>(entity);
+            return _mapper.Map<TResponseDto>(entity);
         }
 
         public virtual async Task DeleteAsync(IEntityKey key)

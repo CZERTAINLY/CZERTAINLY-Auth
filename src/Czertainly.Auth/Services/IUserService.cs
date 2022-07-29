@@ -5,10 +5,10 @@ using Czertainly.Auth.Models.Dto;
 
 namespace Czertainly.Auth.Services
 {
-    public interface IUserService : IResourceBaseService<UserDto>
+    public interface IUserService : ICrudService<UserDto, UserDetailDto>
     {
-        //Task<List<RoleDto>> GetUserRoles(IEntityKey key);
-        Task<UserDto> AssignRole(IEntityKey userKey, IEntityKey roleKey);
-        Task<UserDto> AssignRoles(IEntityKey userKey, List<Guid> roleUuids);
+        Task<UserProfileDto> GetUserProfileAsync(UserProfileRequestDto dto);
+        Task<UserDetailDto> AssignRoleAsync(IEntityKey userKey, IEntityKey roleKey);
+        Task<UserDetailDto> AssignRolesAsync(IEntityKey userKey, IEnumerable<Guid> roleUuids);
     }
 }

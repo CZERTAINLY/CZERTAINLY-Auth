@@ -3,7 +3,7 @@ using Czertainly.Auth.Models.Dto;
 
 namespace Czertainly.Auth.Services
 {
-    public interface IPermissionService : IResourceBaseService<PermissionDto>
+    public interface IPermissionService : ICrudService<PermissionDto, PermissionDetailDto>
     {
     }
 }

@@ -3,8 +3,9 @@ using Czertainly.Auth.Models.Dto;
 
 namespace Czertainly.Auth.Services
 {
-    public interface IEndpointService : IResourceBaseService<EndpointDto>
+    public interface IEndpointService : ICrudService<EndpointDto, EndpointDetailDto>
     {
-        public Task<EndpointsSyncResultDto> SyncEndpoints(List<EndpointRequestDto> endpoints);
+        public Task<SyncEndpointsResultDto> SyncEndpoints(List<EndpointRequestDto> endpoints);
+
     }
 }

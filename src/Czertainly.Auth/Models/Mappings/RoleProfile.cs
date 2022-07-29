@@ -10,6 +10,8 @@ namespace Czertainly.Auth.Models.Mappings
         {
             CreateMap<RoleRequestDto, Role>();
             CreateMap<Role, RoleDto>();
+            CreateMap<Role, RoleDetailDto>()
+                .IncludeBase<Role, RoleDto>();
         }
     }
 }

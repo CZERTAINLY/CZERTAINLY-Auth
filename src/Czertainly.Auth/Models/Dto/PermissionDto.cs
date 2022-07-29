@@ -2,12 +2,13 @@
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record PermissionDto : IResourceDto
+    public record PermissionDto : CrudResponseDto
     {
-        public Guid Uuid { get; init; }
-        public bool AllowAll { get; init; }
-        public RoleDto Role { get; init; }
-        public EndpointDto Endpoint { get; init; }
+        public ResourceDto Resource { get; init; }
+        public ActionDto Action { get; init; }
+        public Guid? ObjectUuid { get; init; }
+        public bool IsAllowed { get; init; }
+
 
     }
 }

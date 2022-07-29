@@ -6,7 +6,7 @@ using Czertainly.Auth.Models.Entities;
 
 namespace Czertainly.Auth.Services
 {
-    public class RoleService : BaseResourceService<Role, RoleDto>, IRoleService
+    public class RoleService : CrudService<Role, RoleDto, RoleDetailDto>, IRoleService
     {
 
         public RoleService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Role, mapper)

@@ -36,9 +36,9 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpGet("{roleUuid}")]
-        public async Task<ActionResult<RoleDto>> GetRoleAsync([FromRoute] Guid roleUuid)
+        public async Task<ActionResult<RoleDetailDto>> GetRoleAsync([FromRoute] Guid roleUuid)
         {
-            var entityKey = new EntityKey { Uuid = roleUuid };
+            var entityKey = new EntityKey(roleUuid);
             var result = await _roleService.GetDetailAsync(entityKey);
 
             return Ok(result);
@@ -48,7 +48,7 @@ namespace Czertainly.Auth.Controllers
         [ServiceFilter(typeof(ValidationFilter))]
         public async Task<ActionResult<RoleDto>> UpdateRoleAsync([FromRoute] Guid roleUuid, [FromBody] RoleRequestDto roleRequestDto)
         {
-            var entityKey = new EntityKey { Uuid = roleUuid };
+            var entityKey = new EntityKey(roleUuid);
             var result = await _roleService.UpdateAsync(entityKey, roleRequestDto);
 
             return Ok(result);
@@ -57,7 +57,7 @@ namespace Czertainly.Auth.Controllers
         [HttpDelete("{roleUuid}")]
         public async Task<ActionResult<RoleDto>> DeleteRoleAsync([FromRoute] Guid roleUuid)
         {
-            var entityKey = new EntityKey { Uuid = roleUuid };
+            var entityKey = new EntityKey(roleUuid);
             await _roleService.DeleteAsync(entityKey);
 
             return NoContent();

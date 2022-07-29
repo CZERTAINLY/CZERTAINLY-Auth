@@ -2,9 +2,8 @@
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record ResourceDto : IResourceDto
+    public record ResourceDto : CrudResponseDto
     {
-        public Guid Uuid { get; init; }
         public string Name { get; init; }
         public string? ListingEndpoint { get; init; }
 

@@ -1,6 +1,7 @@
 ﻿using Czertainly.Auth.Common.Data.Repositories;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Czertainly.Auth.Data.Repositiories
 {
@@ -9,5 +10,6 @@ namespace Czertainly.Auth.Data.Repositiories
         public ResourceRepository(AuthDbContext repositoryContext) : base(repositoryContext)
         {
         }
+
     }
 }

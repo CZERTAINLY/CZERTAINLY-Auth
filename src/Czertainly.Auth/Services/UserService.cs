@@ -8,21 +8,39 @@ using Czertainly.Auth.Models.Entities;
 
 namespace Czertainly.Auth.Services
 {
-    public class UserService : BaseResourceService<User, UserDto>, IUserService
+    public class UserService : CrudService<User, UserDto, UserDetailDto>, IUserService
     {
         public UserService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.User, mapper)
         {
             
         }
 
-        public Task<UserDto> AssignRole(IEntityKey userKey, IEntityKey roleKey)
+        public async Task<UserProfileDto> GetUserProfileAsync(UserProfileRequestDto dto)
         {
-            throw new NotImplementedException();
+            
         }
 
-        public Task<UserDto> AssignRoles(IEntityKey userKey, List<Guid> roleUuids)
+        public async Task<UserDetailDto> AssignRoleAsync(IEntityKey userKey, IEntityKey roleKey)
         {
-            throw new NotImplementedException();
+            var user = await _repository.GetByKeyAsync(userKey);
+            var role = await _repositoryManager.Role.GetByKeyAsync(roleKey);
+
+            user.Roles.Add(role);
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<UserDetailDto>(user);
+        }
+
+        public async Task<UserDetailDto> AssignRolesAsync(IEntityKey userKey, IEnumerable<Guid> roleUuids)
+        {
+            var user = await _repository.GetByKeyAsync(userKey);
+            var roles = await _repositoryManager.Role.GetByUuidsAsync(roleUuids);
+
+            user.Roles.Clear();
+            foreach (var role in roles) user.Roles.Add(role);
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<UserDetailDto>(user);
         }
     }
 }

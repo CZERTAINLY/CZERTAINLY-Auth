@@ -25,8 +25,13 @@ try
     builder.Services.AddAutoMapper(cfg =>
     {
         cfg.AllowNullCollections = true;
-    }, typeof(Program).Assembly);
-    builder.Services.AddControllers();
+    }, typeof(Program));
+    builder.Services.AddControllers()
+        .ConfigureApiBehaviorOptions(options =>
+        {
+            //options.SuppressInferBindingSourcesForParameters = true;
+        });
+
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(swagger =>
     {
@@ -55,6 +60,8 @@ try
     builder.Services.AddScoped<IRoleService, RoleService>();
     builder.Services.AddScoped<IEndpointService, EndpointService>();
     builder.Services.AddScoped<IPermissionService, PermissionService>();
+    builder.Services.AddScoped<IResourceService, ResourceService>();
+    builder.Services.AddScoped<IActionService, ActionService>();
 
     var app = builder.Build();
 

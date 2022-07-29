@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using Czertainly.Auth.Common.Data;
 using Czertainly.Auth.Common.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Czertainly.Auth.Common.Data.Repositories
 {
@@ -20,5 +21,6 @@ namespace Czertainly.Auth.Common.Data.Repositories
         Task UpdateAsync(IEntityKey entityKey, TEntity entity);
         Task DeleteAsync(IEntityKey entityKey);
         void Delete(TEntity entity);
+        void Reload(TEntity entity);
     }
 }

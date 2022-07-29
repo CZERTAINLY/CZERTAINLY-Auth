@@ -8,44 +8,121 @@ using Endpoint = Czertainly.Auth.Models.Entities.Endpoint;
 
 namespace Czertainly.Auth.Services
 {
-    public class EndpointService : BaseResourceService<Endpoint, EndpointDto>, IEndpointService
+    public class EndpointService : CrudService<Endpoint, EndpointDto, EndpointDetailDto>, IEndpointService
     {
-
-        public EndpointService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Endpoint, mapper)
+        private readonly IResourceService _resourceService;
+        private readonly IActionService _actionService;
+        public EndpointService(IRepositoryManager repositoryManager, IMapper mapper, IResourceService resourceService, IActionService actionService): base(repositoryManager, repositoryManager.Endpoint, mapper)
         {
+            _resourceService = resourceService;
+            _actionService = actionService;
         }
 
-        public override async Task<EndpointDto> CreateAsync(IRequestDto dto)
+        public override async Task<EndpointDto> CreateAsync(ICrudRequestDto dto)
         {
             var endpointDto = (EndpointRequestDto)dto;
-            if (EndpointExists(endpointDto, out var storedEntity)) throw new RequestException("Endpoint with same signature already exists!");
+            if (EndpointExists(endpointDto, out _)) throw new RequestException("Endpoint with same signature already exists!");
 
             return await base.CreateAsync(dto);
         }
 
-        public async Task<EndpointsSyncResultDto> SyncEndpoints(List<EndpointRequestDto> endpoints)
+        public async Task<SyncEndpointsResultDto> SyncEndpoints(List<EndpointRequestDto> endpoints)
         {
-            EndpointDto endpointDto;
-            var result = new EndpointsSyncResultDto();
+            var result = new SyncEndpointsResultDto();
 
+            var endpointsUsed = new HashSet<string>(StringComparer.Ordinal);
+            var resourcesUsed = new HashSet<string>(StringComparer.Ordinal);
+            var actionsUsed = new HashSet<string>(StringComparer.Ordinal);
+            var resourceListingEndpoints = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            var endpointsMapping = await _repositoryManager.Endpoint.GetExistingEndpointsMap();
             var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
-            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => $"{a.ResourceId}.{a.Name}");
-            var endpointsMapping = await _repositoryManager.Endpoint.GetDictionaryMap(e => $"{e.Method} {e.RouteTemplate}");
-            foreach (var endpointRequestDto in endpoints)
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => $"{a.Resource.Name}.{a.Name}");
+            foreach (var syncEndpointDto in endpoints)
             {
-                var endpointMapKey = $"{endpointRequestDto.Method} {endpointRequestDto.RouteTemplate}";
-                if (endpointsMapping.TryGetValue(endpointMapKey, out var storedEntity))
+                var isEndpointUpdated = false;
+                if (syncEndpointDto.IsListingEndpoint)
                 {
-                    // check if to update resource and action
-                    endpointDto = await UpdateAsync(new EntityKey { Id = storedEntity.Id, Uuid = storedEntity.Uuid }, endpointRequestDto);
-                    result.UpdatedEndpoints.Add(endpointDto);
+                    if (resourceListingEndpoints.ContainsKey(syncEndpointDto.ResourceName)) throw new Exception($"Resource {syncEndpointDto.ResourceName} has more listing endpoints defined!");
+                    resourceListingEndpoints.Add(syncEndpointDto.ResourceName, syncEndpointDto.RouteTemplate);
+                }
+
+                // check if to update resource
+                if (!resourcesMapping.TryGetValue(syncEndpointDto.ResourceName, out var endpointResource))
+                {
+                    var dto = new ResourceRequestDto { Name = syncEndpointDto.ResourceName, ListingEndpoint = syncEndpointDto.IsListingEndpoint ? syncEndpointDto.RouteTemplate : null };
+                    var resourceDto = await _resourceService.CreateAsync(dto);
+                    result.Resources.Added.Add(resourceDto);
+
+                    endpointResource = await _repositoryManager.Resource.GetByKeyAsync(new EntityKey(resourceDto.Uuid));
+                    resourcesMapping.Add(syncEndpointDto.ResourceName, endpointResource);
+                }
+                resourcesUsed.Add(syncEndpointDto.ResourceName);
+
+                // check if to update action
+                var endpointActionMapKey = $"{syncEndpointDto.ResourceName}.{syncEndpointDto.ActionName}";
+                if (!actionsMapping.TryGetValue(endpointActionMapKey, out var endpointAction))
+                {
+                    var dto = new ActionRequestDto { Name = syncEndpointDto.ActionName, ResourceId = endpointResource.Id, ResourceName = syncEndpointDto.ResourceName };
+                    var actionDto = await _actionService.CreateAsync(dto);
+                    result.Actions.Added.Add(actionDto);
+
+                    endpointAction = await _repositoryManager.Action.GetByKeyAsync(new EntityKey(actionDto.Uuid));
+                    actionsMapping.Add(endpointActionMapKey, endpointAction);
+                }
+                actionsUsed.Add(endpointActionMapKey);
+
+                var endpointMapKey = $"{syncEndpointDto.Method} {syncEndpointDto.RouteTemplate}";
+                if (endpointsMapping.TryGetValue(endpointMapKey, out var endpoint))
+                {
+                    if (!endpoint.Resource.Name.Equals(syncEndpointDto.ResourceName))
+                    {
+                        isEndpointUpdated = true;
+                        endpoint.Resource = endpointResource;
+                    }
+
+                    if (!endpoint.Action.Name.Equals(syncEndpointDto.ActionName))
+                    {
+                        isEndpointUpdated = true;
+                        endpoint.Action = endpointAction;
+                    }
+
+                    if(isEndpointUpdated) result.Endpoints.Updated.Add(_mapper.Map<EndpointDto>(endpoint));
+
+                    endpointsMapping.Remove(endpointMapKey);
                 }
                 else
                 {
-                    endpointDto = await base.CreateAsync(endpointRequestDto);
-                    result.AddedEndpoints.Add(endpointDto);
+                    var entity = _mapper.Map<Endpoint>(syncEndpointDto);
+                    entity.Resource = endpointResource;
+                    entity.Action = endpointAction;
+
+                    _repository.Create(entity);
+                    result.Endpoints.Added.Add(_mapper.Map<EndpointDto>(entity));
                 }
             }
+
+            // delete unused endpoints
+            foreach (var item in endpointsMapping)
+            {
+                result.Endpoints.Removed.Add(_mapper.Map<EndpointDto>(item.Value));
+                _repository.Delete(item.Value);
+            }
+
+            // update resources listing endpoints and check unused resources
+            foreach (var item in resourcesMapping)
+            {
+                resourceListingEndpoints.TryGetValue(item.Value.Name, out var listingEndpoint);
+                item.Value.ListingEndpoint = listingEndpoint;
+
+                if(!resourcesUsed.Contains(item.Value.Name)) result.Resources.Unused.Add(_mapper.Map<ResourceDto>(item.Value));
+            }
+
+            // check unused actions
+            foreach (var actionName in actionsUsed) actionsMapping.Remove(actionName);
+            foreach (var item in actionsMapping) result.Actions.Unused.Add(_mapper.Map<ActionDto>(item.Value));
+
+            await _repositoryManager.SaveAsync();
 
             return result;
         }

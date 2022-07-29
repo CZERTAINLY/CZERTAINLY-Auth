@@ -10,6 +10,7 @@ namespace Czertainly.Auth.Models.Mappings
         {
             CreateMap<EndpointRequestDto, Endpoint>();
             CreateMap<Endpoint, EndpointDto>();
+            CreateMap<Endpoint, EndpointDetailDto>();
         }
     }
 }
