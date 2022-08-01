@@ -17,7 +17,7 @@ namespace Czertainly.Auth.Services
 
         public async Task<UserProfileDto> GetUserProfileAsync(UserProfileRequestDto dto)
         {
-            
+            throw new NotImplementedException();
         }
 
         public async Task<UserDetailDto> AssignRoleAsync(IEntityKey userKey, IEntityKey roleKey)
