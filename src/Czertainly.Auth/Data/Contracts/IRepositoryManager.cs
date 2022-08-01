@@ -11,6 +11,8 @@ namespace Czertainly.Auth.Data.Contracts
         IRoleRepository Role { get; }
         IPermissionRepository Permission { get; }
         IEndpointRepository Endpoint { get; }
+        IResourceRepository Resource { get; }
+        IActionRepository Action { get; }
 
         Task SaveAsync();
     }

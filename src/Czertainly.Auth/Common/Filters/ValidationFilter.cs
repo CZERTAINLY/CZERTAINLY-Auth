@@ -8,7 +8,7 @@ namespace Czertainly.Auth.Common.Filters
     {
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            var param = context.ActionArguments.SingleOrDefault(p => p.Value is IRequestDto);
+            var param = context.ActionArguments.SingleOrDefault(p => p.Value is ICrudRequestDto);
             if (param.Value == null)
             {
                 context.Result = new BadRequestObjectResult("Object is null");

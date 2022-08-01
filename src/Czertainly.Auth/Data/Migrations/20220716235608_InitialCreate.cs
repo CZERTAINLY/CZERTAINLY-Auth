@@ -14,23 +14,19 @@ namespace Czertainly.Auth.Data.Migrations
                 name: "auth");
 
             migrationBuilder.CreateTable(
-                name: "endpoint",
+                name: "resource",
                 schema: "auth",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    method = table.Column<string>(type: "text", nullable: false),
-                    route_template = table.Column<string>(type: "text", nullable: false),
-                    service_name = table.Column<string>(type: "text", nullable: true),
-                    resource_name = table.Column<string>(type: "text", nullable: true),
-                    action_name = table.Column<string>(type: "text", nullable: true),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    listing_endpoint = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_endpoint", x => x.id);
+                    table.PrimaryKey("PK_resource", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -40,9 +36,9 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    description = table.Column<string>(type: "text", nullable: true),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    description = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -56,12 +52,14 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     username = table.Column<string>(type: "text", nullable: false),
                     first_name = table.Column<string>(type: "text", nullable: true),
                     last_name = table.Column<string>(type: "text", nullable: true),
                     email = table.Column<string>(type: "text", nullable: false),
                     enabled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    certificate_uuid = table.Column<Guid>(type: "uuid", nullable: true),
+                    certificate_fingerprint = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -69,56 +67,24 @@ namespace Czertainly.Auth.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "permission",
+                name: "action",
                 schema: "auth",
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    role_id = table.Column<long>(type: "bigint", nullable: false),
-                    endpoint_id = table.Column<long>(type: "bigint", nullable: false),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    resource_id = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_permission", x => x.id);
+                    table.PrimaryKey("PK_action", x => x.id);
                     table.ForeignKey(
-                        name: "FK_permission_endpoint_endpoint_id",
-                        column: x => x.endpoint_id,
+                        name: "FK_action_resource_resource_id",
+                        column: x => x.resource_id,
                         principalSchema: "auth",
-                        principalTable: "endpoint",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_permission_role_role_id",
-                        column: x => x.role_id,
-                        principalSchema: "auth",
-                        principalTable: "role",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "user_auth_info",
-                schema: "auth",
-                columns: table => new
-                {
-                    id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    certificate_uuid = table.Column<string>(type: "text", nullable: true),
-                    certificate_serial_number = table.Column<string>(type: "text", nullable: true),
-                    certificate_fingerprint = table.Column<string>(type: "text", nullable: true),
-                    user_id = table.Column<long>(type: "bigint", nullable: false),
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_user_auth_info", x => x.id);
-                    table.ForeignKey(
-                        name: "FK_user_auth_info_user_user_id",
-                        column: x => x.user_id,
-                        principalSchema: "auth",
-                        principalTable: "user",
+                        principalTable: "resource",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -150,18 +116,106 @@ namespace Czertainly.Auth.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_endpoint_uuid",
+            migrationBuilder.CreateTable(
+                name: "endpoint",
                 schema: "auth",
-                table: "endpoint",
-                column: "uuid",
-                unique: true);
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    method = table.Column<string>(type: "text", nullable: false),
+                    route_template = table.Column<string>(type: "text", nullable: false),
+                    resource_id = table.Column<long>(type: "bigint", nullable: false),
+                    action_id = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_endpoint", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_endpoint_action_action_id",
+                        column: x => x.action_id,
+                        principalSchema: "auth",
+                        principalTable: "action",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_endpoint_resource_resource_id",
+                        column: x => x.resource_id,
+                        principalSchema: "auth",
+                        principalTable: "resource",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "permission",
+                schema: "auth",
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
+                    role_id = table.Column<long>(type: "bigint", nullable: false),
+                    resource_id = table.Column<long>(type: "bigint", nullable: true),
+                    action_id = table.Column<long>(type: "bigint", nullable: true),
+                    object_uuid = table.Column<Guid>(type: "uuid", nullable: true),
+                    is_allowed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_permission", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_permission_action_action_id",
+                        column: x => x.action_id,
+                        principalSchema: "auth",
+                        principalTable: "action",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_permission_resource_resource_id",
+                        column: x => x.resource_id,
+                        principalSchema: "auth",
+                        principalTable: "resource",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "FK_permission_role_role_id",
+                        column: x => x.role_id,
+                        principalSchema: "auth",
+                        principalTable: "role",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
-                name: "IX_permission_endpoint_id",
+                name: "IX_action_resource_id",
+                schema: "auth",
+                table: "action",
+                column: "resource_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_endpoint_action_id",
+                schema: "auth",
+                table: "endpoint",
+                column: "action_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_endpoint_resource_id",
+                schema: "auth",
+                table: "endpoint",
+                column: "resource_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_permission_action_id",
                 schema: "auth",
                 table: "permission",
-                column: "endpoint_id");
+                column: "action_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_permission_resource_id",
+                schema: "auth",
+                table: "permission",
+                column: "resource_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_permission_role_id",
@@ -170,38 +224,10 @@ namespace Czertainly.Auth.Data.Migrations
                 column: "role_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_permission_uuid",
+                name: "IX_resource_name",
                 schema: "auth",
-                table: "permission",
-                column: "uuid",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_role_uuid",
-                schema: "auth",
-                table: "role",
-                column: "uuid",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_uuid",
-                schema: "auth",
-                table: "user",
-                column: "uuid",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_auth_info_user_id",
-                schema: "auth",
-                table: "user_auth_info",
-                column: "user_id",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_user_auth_info_uuid",
-                schema: "auth",
-                table: "user_auth_info",
-                column: "uuid",
+                table: "resource",
+                column: "name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -214,11 +240,11 @@ namespace Czertainly.Auth.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "permission",
+                name: "endpoint",
                 schema: "auth");
 
             migrationBuilder.DropTable(
-                name: "user_auth_info",
+                name: "permission",
                 schema: "auth");
 
             migrationBuilder.DropTable(
@@ -226,7 +252,7 @@ namespace Czertainly.Auth.Data.Migrations
                 schema: "auth");
 
             migrationBuilder.DropTable(
-                name: "endpoint",
+                name: "action",
                 schema: "auth");
 
             migrationBuilder.DropTable(
@@ -235,6 +261,10 @@ namespace Czertainly.Auth.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "user",
+                schema: "auth");
+
+            migrationBuilder.DropTable(
+                name: "resource",
                 schema: "auth");
         }
     }

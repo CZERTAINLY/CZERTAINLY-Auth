@@ -19,15 +19,18 @@ public class Endpoint : BaseEntity
     [Column("route_template")]
     public string RouteTemplate { get; set; }
 
-    [Column("service_name")]
-    public string? ServiceName { get; set; }
+    [Required]
+    [Column("resource_id")]
+    public long ResourceId { get; set; }
 
-    [Column("resource_name")]
-    public string? ResourceName { get; set; }
+    [ForeignKey(nameof(ResourceId))]
+    public Resource Resource { get; set; }
 
-    [Column("action_name")]
-    public string? ActionName { get; set; }
+    [Required]
+    [Column("action_id")]
+    public long ActionId { get; set; }
 
-    public ICollection<Permission> Permissions { get; set; }
+    [ForeignKey(nameof(ActionId))]
+    public Action Action { get; set; }
 
 }

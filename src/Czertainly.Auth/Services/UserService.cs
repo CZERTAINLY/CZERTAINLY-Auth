@@ -8,26 +8,39 @@ using Czertainly.Auth.Models.Entities;
 
 namespace Czertainly.Auth.Services
 {
-    public class UserService : ResourceService<User, UserDto>, IUserService
+    public class UserService : CrudService<User, UserDto, UserDetailDto>, IUserService
     {
-        //private readonly IMapper _mapper;
-        //private readonly IRepositoryManager _repositoryManager;
-
         public UserService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.User, mapper)
         {
-            //_mapper = mapper;
-            //_repositoryManager = repositoryManager;
+            
         }
 
-        public async Task<PagedResponse<UserDto>> GetUsersAsync()
+        public async Task<UserProfileDto> GetUserProfileAsync(UserProfileRequestDto dto)
         {
-            var users = await _repositoryManager.User.GetAllAsync(new QueryStringParameters());
+            throw new NotImplementedException();
+        }
 
-            return new PagedResponse<UserDto>
-            {
-                Data = _mapper.Map<List<UserDto>>(users),
-                Links = _mapper.Map<PagingMetadata>(users),
-            };
+        public async Task<UserDetailDto> AssignRoleAsync(IEntityKey userKey, IEntityKey roleKey)
+        {
+            var user = await _repository.GetByKeyAsync(userKey);
+            var role = await _repositoryManager.Role.GetByKeyAsync(roleKey);
+
+            user.Roles.Add(role);
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<UserDetailDto>(user);
+        }
+
+        public async Task<UserDetailDto> AssignRolesAsync(IEntityKey userKey, IEnumerable<Guid> roleUuids)
+        {
+            var user = await _repository.GetByKeyAsync(userKey);
+            var roles = await _repositoryManager.Role.GetByUuidsAsync(roleUuids);
+
+            user.Roles.Clear();
+            foreach (var role in roles) user.Roles.Add(role);
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<UserDetailDto>(user);
         }
     }
 }
