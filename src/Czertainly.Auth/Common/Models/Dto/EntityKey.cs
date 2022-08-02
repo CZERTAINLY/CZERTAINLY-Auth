@@ -15,7 +15,7 @@ namespace Czertainly.Auth.Common.Models.Dto
 
         public EntityKey(long id)
         {
-            Id = Id;
+            Id = id;
         }
 
         public EntityKey(Guid uuid)
@@ -25,7 +25,7 @@ namespace Czertainly.Auth.Common.Models.Dto
 
         public EntityKey(long id, Guid uuid)
         {
-            Id = Id;
+            Id = id;
             Uuid = uuid;
         }
     }

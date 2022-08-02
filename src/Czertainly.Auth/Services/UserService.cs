@@ -5,6 +5,8 @@ using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
+using System.Security.Cryptography.X509Certificates;
+using System.Web;
 
 namespace Czertainly.Auth.Services
 {
@@ -15,8 +17,17 @@ namespace Czertainly.Auth.Services
             
         }
 
-        public async Task<UserProfileDto> GetUserProfileAsync(UserProfileRequestDto dto)
+        public async Task<UserProfileDto> GetUserProfileAsync(string certificate)
         {
+            var decodedCertificate = HttpUtility.UrlDecode(certificate);
+            var certPemString = decodedCertificate.Replace("-----BEGIN CERTIFICATE-----", "").Replace("-----END CERTIFICATE-----", "").ReplaceLineEndings("");
+            var cert = new X509Certificate2(Convert.FromBase64String(certPemString));
+            var isValid = cert.Verify();
+
+            var chain = new X509Chain();
+            chain.Build(cert);
+            //chain.ChainPolicy.
+
             throw new NotImplementedException();
         }
 

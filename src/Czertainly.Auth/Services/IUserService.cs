@@ -7,7 +7,7 @@ namespace Czertainly.Auth.Services
 {
     public interface IUserService : ICrudService<UserDto, UserDetailDto>
     {
-        Task<UserProfileDto> GetUserProfileAsync(UserProfileRequestDto dto);
+        Task<UserProfileDto> GetUserProfileAsync(string certificate);
         Task<UserDetailDto> AssignRoleAsync(IEntityKey userKey, IEntityKey roleKey);
         Task<UserDetailDto> AssignRolesAsync(IEntityKey userKey, IEnumerable<Guid> roleUuids);
     }

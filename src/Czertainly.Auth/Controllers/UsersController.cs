@@ -19,9 +19,9 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpGet("profile")]
-        public async Task<ActionResult<UserProfileDto>> GetUserProfile([FromHeader] UserProfileRequestDto dto)
+        public async Task<ActionResult<UserProfileDto>> GetUserProfile([FromHeader(Name = "X-APP-CERTIFICATE")] string certificate)
         {
-            var result = await _userService.GetUserProfileAsync(dto);
+            var result = await _userService.GetUserProfileAsync(certificate);
 
             return Ok(result);
         }
