@@ -19,14 +19,10 @@ namespace Czertainly.Auth.Services
 
         public async Task<UserProfileDto> GetUserProfileAsync(string certificate)
         {
-            var decodedCertificate = HttpUtility.UrlDecode(certificate);
-            var certPemString = decodedCertificate.Replace("-----BEGIN CERTIFICATE-----", "").Replace("-----END CERTIFICATE-----", "").ReplaceLineEndings("");
-            var cert = new X509Certificate2(Convert.FromBase64String(certPemString));
-            var isValid = cert.Verify();
+            var clientCertificate = ParseCertificate(certificate);
+            var isCertValid = VerifyClientCertificate(clientCertificate);
+            
 
-            var chain = new X509Chain();
-            chain.Build(cert);
-            //chain.ChainPolicy.
 
             throw new NotImplementedException();
         }
@@ -52,6 +48,23 @@ namespace Czertainly.Auth.Services
             await _repositoryManager.SaveAsync();
 
             return _mapper.Map<UserDetailDto>(user);
+        }
+
+        private X509Certificate2 ParseCertificate(string clientCertificate)
+        {
+            var decodedCertificate = HttpUtility.UrlDecode(certificate);
+            var certPemString = decodedCertificate.Replace("-----BEGIN CERTIFICATE-----", "").Replace("-----END CERTIFICATE-----", "").ReplaceLineEndings("");
+            return new X509Certificate2(Convert.FromBase64String(certPemString));
+        }
+
+        private bool VerifyClientCertificate(X509Certificate2 certificate)
+        {
+            var verify = new X509Chain();
+            //verify.ChainPolicy.ExtraStore.Add(secureClient.CertificateAuthority); // add CA cert for verification
+            verify.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority; // this accepts too many certificates
+            verify.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck; // no revocation checking
+            verify.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+            return verify.Build(certificate);
         }
     }
 }

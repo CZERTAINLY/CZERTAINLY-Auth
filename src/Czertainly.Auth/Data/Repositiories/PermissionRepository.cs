@@ -9,6 +9,12 @@ namespace Czertainly.Auth.Data.Repositiories
     {
         public PermissionRepository(AuthDbContext repositoryContext) : base(repositoryContext)
         {
+
+        }
+
+        public async Task<List<Permission>> GetUserPermissions(Guid userUuid)
+        {
+            return _dbSet.Include(p => p.Resource).Include(p => p.Action).Include(p => p.Role).ThenInclude(r => r.Users.Where(u => u.Uuid == userUuid)).OrderBy(p => p.ResourceId).ThenBy(p => p.ActionId).ThenBy(p => p.ObjectUuid).ToList();
         }
     }
 }

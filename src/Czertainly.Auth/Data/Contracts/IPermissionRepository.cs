@@ -5,5 +5,6 @@ namespace Czertainly.Auth.Data.Contracts
 {
     public interface IPermissionRepository : IBaseRepository<Permission>
     {
+        Task<List<Permission>> GetUserPermissions(Guid userUuid);
     }
 }

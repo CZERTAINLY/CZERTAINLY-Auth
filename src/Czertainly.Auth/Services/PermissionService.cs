@@ -12,5 +12,15 @@ namespace Czertainly.Auth.Services
         public PermissionService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Permission, mapper)
         {
         }
+
+        public async Task<UserPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
+        {
+
+
+            var result = new UserPermissionsDto();
+
+
+            return result;
+        }
     }
 }
