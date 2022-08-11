@@ -5,6 +5,6 @@ namespace Czertainly.Auth.Services
 {
     public interface IPermissionService : ICrudService<PermissionDto, PermissionDetailDto>
     {
-        Task<UserPermissionsDto> GetUserPermissionsAsync(Guid userUuid);
+        Task<MergedPermissionsDto> GetUserPermissionsAsync(Guid userUuid);
     }
 }

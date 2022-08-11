@@ -2,16 +2,16 @@
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record UserPermissionsDto
+    public record MergedPermissionsDto
     {
-        public bool AllowAllResources { get; init; }
+        public bool AllowAllResources { get; set; }
         public List<ResourcePermissionsDto> Resources { get; init; } = new List<ResourcePermissionsDto>();
     }
 
     public record ResourcePermissionsDto
     {
         public string Name { get; init; }
-        public bool AllowAllActions { get; init; }
+        public bool AllowAllActions { get; set; }
         public List<string> Actions { get; init; } = new List<string>();
         public List<ObjectPermissionsDto> Objects { get; init; } = new List<ObjectPermissionsDto>();
 

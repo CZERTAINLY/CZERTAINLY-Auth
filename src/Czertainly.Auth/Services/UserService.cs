@@ -52,7 +52,7 @@ namespace Czertainly.Auth.Services
 
         private X509Certificate2 ParseCertificate(string clientCertificate)
         {
-            var decodedCertificate = HttpUtility.UrlDecode(certificate);
+            var decodedCertificate = HttpUtility.UrlDecode(clientCertificate);
             var certPemString = decodedCertificate.Replace("-----BEGIN CERTIFICATE-----", "").Replace("-----END CERTIFICATE-----", "").ReplaceLineEndings("");
             return new X509Certificate2(Convert.FromBase64String(certPemString));
         }

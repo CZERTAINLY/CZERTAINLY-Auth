@@ -71,6 +71,14 @@ namespace Czertainly.Auth.Controllers
             return NoContent();
         }
 
+        [HttpGet("{userUuid}/permissions")]
+        public async Task<ActionResult<MergedPermissionsDto>> GetPermissionsAsync([FromServices] IPermissionService permissionService, [FromRoute] Guid userUuid)
+        {
+            var result = await permissionService.GetUserPermissionsAsync(userUuid);
+
+            return Ok(result);
+        }
+
         [HttpPatch("{userUuid}/roles")]
         public async Task<ActionResult<UserDetailDto>> AssignRolesAsync([FromRoute] Guid userUuid, [FromBody] IEnumerable<Guid> roleUuids)
         {
