@@ -26,11 +26,10 @@ public class Endpoint : BaseEntity
     [ForeignKey(nameof(ResourceId))]
     public Resource Resource { get; set; }
 
-    [Required]
     [Column("action_id")]
-    public long ActionId { get; set; }
+    public long? ActionId { get; set; }
 
     [ForeignKey(nameof(ActionId))]
-    public Action Action { get; set; }
+    public Action? Action { get; set; }
 
 }

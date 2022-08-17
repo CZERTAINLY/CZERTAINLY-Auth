@@ -3,12 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record UserUpdateRequestDto : UpdateRequestDto
+    public record UserUpdateRequestDto : ICrudRequestDto
     {
-        [Required]
-        [MinLength(3)]
-        public string Username { get; init; }
-        
         public string? FirstName { get; init; }
         
         public string? LastName { get; init; }

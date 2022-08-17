@@ -128,7 +128,7 @@ namespace Czertainly.Auth.Data.Migrations
                     method = table.Column<string>(type: "text", nullable: false),
                     route_template = table.Column<string>(type: "text", nullable: false),
                     resource_id = table.Column<long>(type: "bigint", nullable: false),
-                    action_id = table.Column<long>(type: "bigint", nullable: false)
+                    action_id = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -138,8 +138,7 @@ namespace Czertainly.Auth.Data.Migrations
                         column: x => x.action_id,
                         principalSchema: "auth",
                         principalTable: "action",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "FK_endpoint_resource_resource_id",
                         column: x => x.resource_id,

@@ -54,7 +54,7 @@ namespace Czertainly.Auth.Controllers
 
         [HttpPut("{userUuid}")]
         [ServiceFilter(typeof(ValidationFilter))]
-        public async Task<ActionResult<UserDto>> UpdateUserAsync([FromRoute] Guid userUuid, [FromBody] UserRequestDto userRequestDto)
+        public async Task<ActionResult<UserDto>> UpdateUserAsync([FromRoute] Guid userUuid, [FromBody] UserUpdateRequestDto userRequestDto)
         {
             var entityKey = new EntityKey(userUuid);
             var result = await _userService.UpdateAsync(entityKey, userRequestDto);

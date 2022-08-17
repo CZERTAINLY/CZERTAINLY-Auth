@@ -53,6 +53,9 @@ namespace Czertainly.Auth.Common.Services
         public virtual async Task<TResponseDto> UpdateAsync(IEntityKey key, ICrudRequestDto dto)
         {
             var entity = _mapper.Map<TEntity>(dto);
+            var trackedEntity = await _repository.GetByKeyAsync(key);
+            var trackedEntity2 = _mapper.Map(dto, trackedEntity);
+
             if (key.Uuid.HasValue) entity.Uuid = key.Uuid.Value;
 
             await _repository.UpdateAsync(key, entity);

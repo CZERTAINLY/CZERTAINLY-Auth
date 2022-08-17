@@ -64,7 +64,7 @@ namespace Czertainly.Auth.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("ActionId")
+                    b.Property<long?>("ActionId")
                         .HasColumnType("bigint")
                         .HasColumnName("action_id");
 
@@ -280,7 +280,7 @@ namespace Czertainly.Auth.Data.Migrations
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
                 {
                     b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
-                        .WithMany("Actions")
+                        .WithMany()
                         .HasForeignKey("ResourceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -292,9 +292,7 @@ namespace Czertainly.Auth.Data.Migrations
                 {
                     b.HasOne("Czertainly.Auth.Models.Entities.Action", "Action")
                         .WithMany()
-                        .HasForeignKey("ActionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ActionId");
 
                     b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
                         .WithMany()
@@ -310,11 +308,11 @@ namespace Czertainly.Auth.Data.Migrations
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Permission", b =>
                 {
                     b.HasOne("Czertainly.Auth.Models.Entities.Action", "Action")
-                        .WithMany("Permissions")
+                        .WithMany()
                         .HasForeignKey("ActionId");
 
                     b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
-                        .WithMany("Permissions")
+                        .WithMany()
                         .HasForeignKey("ResourceId");
 
                     b.HasOne("Czertainly.Auth.Models.Entities.Role", "Role")
@@ -343,18 +341,6 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasForeignKey("user_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
-                {
-                    b.Navigation("Permissions");
-                });
-
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Resource", b =>
-                {
-                    b.Navigation("Actions");
-
-                    b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Role", b =>
