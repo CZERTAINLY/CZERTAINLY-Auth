@@ -54,7 +54,7 @@ namespace Czertainly.Auth.Services
                     var resourceDto = await _resourceService.CreateAsync(dto);
                     result.Resources.Added.Add(resourceDto);
 
-                    endpointResource = await _repositoryManager.Resource.GetByKeyAsync(new EntityKey(resourceDto.Uuid));
+                    endpointResource = await _repositoryManager.Resource.GetByKeyAsync(resourceDto.Uuid);
                     resourcesMapping.Add(syncEndpointDto.ResourceName, endpointResource);
                 }
                 resourcesUsed.Add(syncEndpointDto.ResourceName);
@@ -63,11 +63,11 @@ namespace Czertainly.Auth.Services
                 var endpointActionMapKey = $"{syncEndpointDto.ResourceName}.{syncEndpointDto.ActionName}";
                 if (!actionsMapping.TryGetValue(endpointActionMapKey, out var endpointAction))
                 {
-                    var dto = new ActionRequestDto { Name = syncEndpointDto.ActionName, ResourceId = endpointResource.Id, ResourceName = syncEndpointDto.ResourceName };
+                    var dto = new ActionRequestDto { Name = syncEndpointDto.ActionName, ResourceUuid = endpointResource.Uuid, ResourceName = syncEndpointDto.ResourceName };
                     var actionDto = await _actionService.CreateAsync(dto);
                     result.Actions.Added.Add(actionDto);
 
-                    endpointAction = await _repositoryManager.Action.GetByKeyAsync(new EntityKey(actionDto.Uuid));
+                    endpointAction = await _repositoryManager.Action.GetByKeyAsync(actionDto.Uuid);
                     actionsMapping.Add(endpointActionMapKey, endpointAction);
                 }
                 actionsUsed.Add(endpointActionMapKey);
@@ -112,10 +112,12 @@ namespace Czertainly.Auth.Services
             // update resources listing endpoints and check unused resources
             foreach (var item in resourcesMapping)
             {
-                resourceListingEndpoints.TryGetValue(item.Value.Name, out var listingEndpoint);
-                item.Value.ListingEndpoint = listingEndpoint;
+                if(item.Value.ListingEndpoint == null && resourceListingEndpoints.TryGetValue(item.Value.Name, out var listingEndpoint))
+                {
+                    item.Value.ListingEndpoint = listingEndpoint;
+                }
 
-                if(!resourcesUsed.Contains(item.Value.Name)) result.Resources.Unused.Add(_mapper.Map<ResourceDto>(item.Value));
+                if (!resourcesUsed.Contains(item.Value.Name)) result.Resources.Unused.Add(_mapper.Map<ResourceDto>(item.Value));
             }
 
             // check unused actions

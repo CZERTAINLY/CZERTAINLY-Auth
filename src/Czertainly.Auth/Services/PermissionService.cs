@@ -27,7 +27,7 @@ namespace Czertainly.Auth.Services
             foreach (var permission in permissions)
             {
                 // if some role allows all resources and other no, allow all and let overriding on lower level
-                if (!permission.ResourceId.HasValue)
+                if (!permission.ResourceUuid.HasValue)
                 {
                     result.AllowAllResources = result.AllowAllResources || permission.IsAllowed;
                     continue;
@@ -35,7 +35,7 @@ namespace Czertainly.Auth.Services
 
                 var resourceName = permission.Resource.Name;
                 if (!resourcesMapping.TryGetValue(resourceName, out var resource)) resourcesMapping.Add(resourceName, resource = new ResourcePermissionsDto { Name = resourceName });
-                if(!permission.ActionId.HasValue)
+                if(!permission.ActionUuid.HasValue)
                 {
                     // if some role allows all resource actions and other no, allow all and let overriding on lower level
                     resource.AllowAllActions = resource.AllowAllActions || permission.IsAllowed;

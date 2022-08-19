@@ -1,10 +1,12 @@
 ﻿using Czertainly.Auth.Common.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Czertainly.Auth.Models.Entities;
 
 [Table("user")]
+[Index(nameof(Username), IsUnique = true)]
 public class User : BaseEntity
 {
     [Required]
@@ -24,6 +26,9 @@ public class User : BaseEntity
     [Required]
     [Column("enabled")]
     public bool Enabled { get; set; } = true;
+
+    [Column("system_user")]
+    public bool SystemUser { get; set; } = false;
 
     [Column("certificate_uuid")]
     public Guid? CertificateUuid { get; set; }

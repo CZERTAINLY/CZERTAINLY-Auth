@@ -4,11 +4,8 @@ namespace Czertainly.Auth.Models.Dto
 {
     public record UserProfileDto
     {
-        public string Username { get; init; }
-        public string? FirstName { get; init; }
-        public string? LastName { get; init; }
-        public string Email { get; init; }
-        public bool Enabled { get; init; }
-        public UserCertificateDto? Certificate { get; init; }
+        public UserDto User { get; init; }
+        public List<string> Roles { get; init; } = new List<string>();
+        public MergedPermissionsDto Permissions { get; init; }
     }
 }

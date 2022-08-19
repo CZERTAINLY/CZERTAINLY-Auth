@@ -1,10 +1,12 @@
 ﻿using Czertainly.Auth.Common.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Czertainly.Auth.Models.Entities;
 
 [Table("role")]
+[Index(nameof(Name), IsUnique = true)]
 public class Role : BaseEntity
 {
     [Required]

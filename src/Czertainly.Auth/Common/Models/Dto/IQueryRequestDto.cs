@@ -2,8 +2,8 @@
 {
     public interface IQueryRequestDto
     {
-        public int PageNumber { get; }
-        public int ItemsPerPage { get; }
-        public string SortBy { get; }
+        public int Page { get; }
+        public int PageSize { get; }
+        public string? SortBy { get; }
     }
 }

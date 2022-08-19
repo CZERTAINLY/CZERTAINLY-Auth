@@ -20,16 +20,16 @@ public class Endpoint : BaseEntity
     public string RouteTemplate { get; set; }
 
     [Required]
-    [Column("resource_id")]
-    public long ResourceId { get; set; }
+    [Column("resource_uuid")]
+    public Guid ResourceUuid { get; set; }
 
-    [ForeignKey(nameof(ResourceId))]
+    [ForeignKey(nameof(ResourceUuid))]
     public Resource Resource { get; set; }
 
-    [Column("action_id")]
-    public long? ActionId { get; set; }
+    [Column("action_uuid")]
+    public Guid? ActionUuid { get; set; }
 
-    [ForeignKey(nameof(ActionId))]
+    [ForeignKey(nameof(ActionUuid))]
     public Action? Action { get; set; }
 
 }

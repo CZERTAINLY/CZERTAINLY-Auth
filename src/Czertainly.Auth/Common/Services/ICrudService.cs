@@ -9,9 +9,9 @@ namespace Czertainly.Auth.Common.Services
     {
         public Task<PagedResponse<TResponseDto>> GetAsync(IQueryRequestDto dto);
         public Task<TResponseDto> CreateAsync(ICrudRequestDto dto);
-        public Task<TDetailResponseDto> GetDetailAsync(IEntityKey key);
-        public Task<TResponseDto> UpdateAsync(IEntityKey key, ICrudRequestDto dto);
-        public Task DeleteAsync(IEntityKey key);
+        public Task<TDetailResponseDto> GetDetailAsync(Guid key);
+        public Task<TResponseDto> UpdateAsync(Guid key, ICrudRequestDto dto);
+        public Task DeleteAsync(Guid key);
 
     }
 }

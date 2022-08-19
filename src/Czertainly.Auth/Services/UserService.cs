@@ -12,22 +12,38 @@ namespace Czertainly.Auth.Services
 {
     public class UserService : CrudService<User, UserDto, UserDetailDto>, IUserService
     {
-        public UserService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.User, mapper)
+        private readonly IPermissionService _permissionService;
+
+        public UserService(IRepositoryManager repositoryManager, IMapper mapper, IPermissionService permissionService): base(repositoryManager, repositoryManager.User, mapper)
         {
-            
+            _permissionService = permissionService;
         }
 
-        public async Task<UserProfileDto> GetUserProfileAsync(string certificate)
+        public async Task<AuthenticationResponseDto> AuthenticateUserAsync(string certificate)
         {
             var clientCertificate = ParseCertificate(certificate);
             var isCertValid = VerifyClientCertificate(clientCertificate);
-            
 
+            var user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == clientCertificate.Thumbprint);
+            if (user == null) return new AuthenticationResponseDto { Authenticated = false };
 
-            throw new NotImplementedException();
+            var permissions = await _permissionService.GetUserPermissionsAsync(user.Uuid);
+
+            var result = new AuthenticationResponseDto
+            {
+                Authenticated = true,
+                Data = new UserProfileDto
+                {
+                    User = _mapper.Map<UserDto>(user),
+                    Roles = user.Roles?.Select(r => r.Name).ToList(),
+                    Permissions = permissions,
+                }
+            };
+
+            return result;
         }
 
-        public async Task<UserDetailDto> AssignRoleAsync(IEntityKey userKey, IEntityKey roleKey)
+        public async Task<UserDetailDto> AssignRoleAsync(Guid userKey, Guid roleKey)
         {
             var user = await _repository.GetByKeyAsync(userKey);
             var role = await _repositoryManager.Role.GetByKeyAsync(roleKey);
@@ -38,7 +54,7 @@ namespace Czertainly.Auth.Services
             return _mapper.Map<UserDetailDto>(user);
         }
 
-        public async Task<UserDetailDto> AssignRolesAsync(IEntityKey userKey, IEnumerable<Guid> roleUuids)
+        public async Task<UserDetailDto> AssignRolesAsync(Guid userKey, IEnumerable<Guid> roleUuids)
         {
             var user = await _repository.GetByKeyAsync(userKey);
             var roles = await _repositoryManager.Role.GetByUuidsAsync(roleUuids);

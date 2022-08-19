@@ -1,6 +1,5 @@
 ﻿using Czertainly.Auth.Common.Models.Dto;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace Czertainly.Auth.Models.Dto
 {
@@ -9,8 +8,7 @@ namespace Czertainly.Auth.Models.Dto
         [Required]
         public string Name { get; init; }
 
-        [JsonIgnore]
-        public long ResourceId{ get; init; }
+        public Guid ResourceUuid { get; init; }
 
         [Required]
         public string ResourceName { get; init; }

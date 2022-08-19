@@ -12,10 +12,10 @@ public class Action : BaseEntity
     public string Name { get; set; }
 
     [Required]
-    [Column("resource_id")]
-    public long ResourceId { get; set; }
+    [Column("resource_uuid")]
+    public Guid ResourceUuid { get; set; }
 
-    [ForeignKey(nameof(ResourceId))]
+    [ForeignKey(nameof(ResourceUuid))]
     public Resource Resource { get; set; }
 
     //public ICollection<Permission> Permissions { get; set; }

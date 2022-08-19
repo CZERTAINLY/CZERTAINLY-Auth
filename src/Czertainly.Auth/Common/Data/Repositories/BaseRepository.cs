@@ -41,24 +41,29 @@ namespace Czertainly.Auth.Common.Data.Repositories
 
         public async Task<PagedList<TEntity>> GetAllAsync(QueryStringParameters parameters)
         {
-            return await PagedList<TEntity>.CreateAsync(FindAll().OrderBy(parameters.SortBy, parameters.SortAscending), parameters.PageNumber, parameters.ItemsPerPage);
+            var queryable = FindAll();
+            if (parameters.SortBy != null) queryable = queryable.OrderBy(parameters.SortBy, parameters.SortAscending);
+            return await PagedList<TEntity>.CreateAsync(queryable, parameters.Page, parameters.PageSize);
         }
 
         public async Task<PagedList<TEntity>> GetWhereAsync(QueryStringParameters parameters, Expression<Func<TEntity, bool>> expression)
         {
-            return await PagedList<TEntity>.CreateAsync(FindByCondition(expression).OrderBy(parameters.SortBy, parameters.SortAscending), parameters.PageNumber, parameters.ItemsPerPage);
+            var queryable = FindByCondition(expression);
+            if (parameters.SortBy != null) queryable = queryable.OrderBy(parameters.SortBy, parameters.SortAscending);
+            return await PagedList<TEntity>.CreateAsync(queryable, parameters.Page, parameters.PageSize);
         }
 
         #endregion
 
-        public async Task<TEntity> GetByKeyAsync(IEntityKey entityKey)
+        public async Task<TEntity> GetByKeyAsync(Guid entityKey)
         {
             return await GetTrackedEntityByKey(entityKey, "find");
         }
 
-        public async Task<TEntity> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
+        public async Task<TEntity?> GetByConditionAsync(Expression<Func<TEntity, bool>> expression)
         {
-            return await _dbSet.Where(expression).FirstOrDefaultAsync();
+            var query = QueryWithCrudIncludes(true);
+            return await query.Where(expression).FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<TEntity>> GetByUuidsAsync(IEnumerable<Guid> uuids)
@@ -80,16 +85,16 @@ namespace Czertainly.Auth.Common.Data.Repositories
             _dbSet.Add(entity);
         }
 
-        public async Task UpdateAsync(IEntityKey entityKey, TEntity entity)
+        public async Task UpdateAsync(Guid entityKey, TEntity entity)
         {
             var trackedEntity = await GetTrackedEntityByKey(entityKey, "update");
-            entity.Id = trackedEntity.Id;
+            //entity.Id = trackedEntity.Id;
             entity.Uuid = trackedEntity.Uuid;
 
             _dbContext.Entry(trackedEntity).CurrentValues.SetValues(entity);
         }
 
-        public async Task DeleteAsync(IEntityKey entityKey)
+        public async Task DeleteAsync(Guid entityKey)
         {
             var trackedEntity = await GetTrackedEntityByKey(entityKey, "delete");
             _dbSet.Remove(trackedEntity);
@@ -120,13 +125,11 @@ namespace Czertainly.Auth.Common.Data.Repositories
 
         #region Private methods
 
-        private async Task<TEntity> GetTrackedEntityByKey(IEntityKey entityKey, string operation)
+        private async Task<TEntity> GetTrackedEntityByKey(Guid entityKey, string operation)
         {
-            if (entityKey.Uuid == null && entityKey.Id == null) throw new EntityNotFoundException($"Cannot {operation} entity {typeof(TEntity).Name} with invalid id");
-
             var query = QueryWithCrudIncludes(true);
-            var trackedEntity = entityKey.Uuid.HasValue ? await query.FirstOrDefaultAsync(e => e.Uuid.Equals(entityKey.Uuid)) : await query.FirstOrDefaultAsync(e => e.Id == entityKey.Id.Value);
-            if (trackedEntity == null) throw new EntityNotFoundException($"Cannot {operation} entity {typeof(TEntity).Name} with id {(entityKey.Uuid.HasValue ? entityKey.Uuid : entityKey.Id.Value)}");
+            var trackedEntity = await query.FirstOrDefaultAsync(e => e.Uuid == entityKey);
+            if (trackedEntity == null) throw new EntityNotFoundException($"Cannot {operation} entity {typeof(TEntity).Name} with id {entityKey}");
 
             return trackedEntity;
         }

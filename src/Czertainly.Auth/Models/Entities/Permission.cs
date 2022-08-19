@@ -8,22 +8,22 @@ namespace Czertainly.Auth.Models.Entities;
 public class Permission : BaseEntity
 {
     [Required]
-    [Column("role_id")]
-    public long RoleId { get; set; }
+    [Column("role_uuid")]
+    public Guid RoleUuid { get; set; }
 
-    [ForeignKey(nameof(RoleId))]
+    [ForeignKey(nameof(RoleUuid))]
     public Role Role { get; set; }
 
-    [Column("resource_id")]
-    public long? ResourceId { get; set; }
+    [Column("resource_uuid")]
+    public Guid? ResourceUuid { get; set; }
 
-    [ForeignKey(nameof(ResourceId))]
+    [ForeignKey(nameof(ResourceUuid))]
     public Resource? Resource { get; set; }
 
-    [Column("action_id")]
-    public long? ActionId { get; set; }
+    [Column("action_uuid")]
+    public Guid? ActionUuid { get; set; }
 
-    [ForeignKey(nameof(ActionId))]
+    [ForeignKey(nameof(ActionUuid))]
     public Action? Action { get; set; }
 
     [Column("object_uuid")]
