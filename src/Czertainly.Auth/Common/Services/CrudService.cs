@@ -52,13 +52,10 @@ namespace Czertainly.Auth.Common.Services
 
         public virtual async Task<TResponseDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
-            var entity = _mapper.Map<TEntity>(dto);
-            var trackedEntity = await _repository.GetByKeyAsync(key);
-            var trackedEntity2 = _mapper.Map(dto, trackedEntity);
+            var entity = await _repository.GetByKeyAsync(key);
+            _mapper.Map(dto, entity);
 
-            //if (key.Uuid.HasValue) entity.Uuid = key.Uuid.Value;
-
-            await _repository.UpdateAsync(key, entity);
+            //await _repository.UpdateAsync(key, entity);
             await _repositoryManager.SaveAsync();
 
             return _mapper.Map<TResponseDto>(entity);

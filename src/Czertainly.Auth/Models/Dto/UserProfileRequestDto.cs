@@ -8,7 +8,7 @@ namespace Czertainly.Auth.Models.Dto
     {
         [Required]
         [JsonPropertyName("X-APP-CERTIFICATE")]
-        public string ClientCertificate { get; init; }
+        public string? ClientCertificate { get; init; }
 
     }
 }

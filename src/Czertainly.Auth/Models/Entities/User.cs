@@ -11,7 +11,7 @@ public class User : BaseEntity
 {
     [Required]
     [Column("username")]
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
     [Column("first_name")]
     public string? FirstName { get; set; }
@@ -21,7 +21,7 @@ public class User : BaseEntity
 
     [Required]
     [Column("email")]
-    public string Email { get; set; }
+    public string? Email { get; set; }
 
     [Required]
     [Column("enabled")]

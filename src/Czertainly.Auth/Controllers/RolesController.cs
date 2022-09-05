@@ -45,7 +45,7 @@ namespace Czertainly.Auth.Controllers
 
         [HttpPut("{roleUuid}")]
         [ServiceFilter(typeof(ValidationFilter))]
-        public async Task<ActionResult<RoleDto>> UpdateRoleAsync([FromRoute] Guid roleUuid, [FromBody] RoleRequestDto roleRequestDto)
+        public async Task<ActionResult<RoleDto>> UpdateRoleAsync([FromRoute] Guid roleUuid, [FromBody] RoleUpdateRequestDto roleRequestDto)
         {
             var result = await _roleService.UpdateAsync(roleUuid, roleRequestDto);
 

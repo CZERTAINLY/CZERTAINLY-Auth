@@ -6,7 +6,7 @@ namespace Czertainly.Auth.Models.Dto
     public record ResourceRequestDto : ICrudRequestDto
     {
         [Required]
-        public string Name { get; init; }
+        public string? Name { get; init; }
         public string? ListingEndpoint { get; init; }
 
     }

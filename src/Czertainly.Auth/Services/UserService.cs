@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Czertainly.Auth.Common.Data;
+using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Web;
 
@@ -19,12 +21,29 @@ namespace Czertainly.Auth.Services
             _permissionService = permissionService;
         }
 
+        public override async Task<UserDto> UpdateAsync(Guid key, ICrudRequestDto dto)
+        {
+            var user = await _repository.GetByKeyAsync(key);
+            if (user.SystemUser) throw new Exception("Cannot update system user!");
+
+            return await base.UpdateAsync(key, dto);
+        }
+
+        public override async Task DeleteAsync(Guid key)
+        {
+            var user = await _repository.GetByKeyAsync(key);
+            if (user.SystemUser) throw new Exception("Cannot update system user!");
+
+            await base.DeleteAsync(key);
+        }
+
         public async Task<AuthenticationResponseDto> AuthenticateUserAsync(string certificate)
         {
             var clientCertificate = ParseCertificate(certificate);
             var isCertValid = VerifyClientCertificate(clientCertificate);
+            var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
 
-            var user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == clientCertificate.Thumbprint);
+            var user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
             if (user == null) return new AuthenticationResponseDto { Authenticated = false };
 
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Uuid);
@@ -35,7 +54,7 @@ namespace Czertainly.Auth.Services
                 Data = new UserProfileDto
                 {
                     User = _mapper.Map<UserDto>(user),
-                    Roles = user.Roles?.Select(r => r.Name).ToList(),
+                    Roles = user.Roles.Select(r => r.Name).ToList(),
                     Permissions = permissions,
                 }
             };
@@ -70,7 +89,15 @@ namespace Czertainly.Auth.Services
         {
             var decodedCertificate = HttpUtility.UrlDecode(clientCertificate);
             var certPemString = decodedCertificate.Replace("-----BEGIN CERTIFICATE-----", "").Replace("-----END CERTIFICATE-----", "").ReplaceLineEndings("");
-            return new X509Certificate2(Convert.FromBase64String(certPemString));
+
+            try
+            {
+                return new X509Certificate2(Convert.FromBase64String(certPemString));
+            }
+            catch (FormatException ex)
+            {
+                throw new RequestException("Wrong format of user certificate: " + ex.Message);
+            }
         }
 
         private bool VerifyClientCertificate(X509Certificate2 certificate)

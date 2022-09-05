@@ -16,6 +16,9 @@ public class Role : BaseEntity
     [Column("description")]
     public string? Description { get; set; }
 
+    [Column("system_role")]
+    public bool SystemRole { get; set; } = false;
+
     public ICollection<User> Users { get; set; }
 
     public ICollection<Permission> Permissions { get; set; }
