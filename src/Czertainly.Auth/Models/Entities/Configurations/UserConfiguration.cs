@@ -13,8 +13,8 @@ namespace Czertainly.Auth.Models.Entities.Configurations
                 .WithMany(r => r.Users)
                 .UsingEntity<Dictionary<string, object>>(
                     "user_role",
-                    x => x.HasOne<Role>().WithMany().HasForeignKey("role_id").OnDelete(DeleteBehavior.Cascade),
-                    x => x.HasOne<User>().WithMany().HasForeignKey("user_id").OnDelete(DeleteBehavior.Cascade));
+                    x => x.HasOne<Role>().WithMany().HasForeignKey("role_uuid").OnDelete(DeleteBehavior.Cascade),
+                    x => x.HasOne<User>().WithMany().HasForeignKey("user_uuid").OnDelete(DeleteBehavior.Cascade));
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Czertainly.Auth.Models.Dto
         public string? LastName { get; init; }
         public string Email { get; init; }
         public bool Enabled { get; init; }
+        public bool SystemUser { get; init; }
         public UserCertificateDto? Certificate { get; init; }
     }
 }

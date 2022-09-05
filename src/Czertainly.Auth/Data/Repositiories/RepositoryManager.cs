@@ -1,8 +1,5 @@
 ﻿using Czertainly.Auth.Data.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Czertainly.Auth.Data.Repositiories
 {
@@ -92,6 +89,11 @@ namespace Czertainly.Auth.Data.Repositiories
         public RepositoryManager(AuthDbContext dbContext)
         {
             _dbContext = dbContext;
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return await _dbContext.Database.BeginTransactionAsync();
         }
 
         public async Task SaveAsync()

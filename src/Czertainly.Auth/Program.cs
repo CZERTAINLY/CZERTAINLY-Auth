@@ -70,6 +70,13 @@ try
     {
         app.UseSwagger();
         app.UseSwaggerUI();
+
+        // run migrations in development environment
+        using (var scope = app.Services.CreateScope())
+        {
+            var dataContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+            dataContext.Database.Migrate();
+        }
     }
 
     app.UseMiddleware<ExceptionMiddleware>();

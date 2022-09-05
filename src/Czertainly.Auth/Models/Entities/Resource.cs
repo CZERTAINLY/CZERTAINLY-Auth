@@ -16,7 +16,7 @@ public class Resource : BaseEntity
     [Column("listing_endpoint")]
     public string? ListingEndpoint { get; set; }
 
-    public ICollection<Action> Actions { get; set; }
+    //public ICollection<Action> Actions { get; set; }
 
-    public ICollection<Permission> Permissions { get; set; }
+    //public ICollection<Permission> Permissions { get; set; }
 }

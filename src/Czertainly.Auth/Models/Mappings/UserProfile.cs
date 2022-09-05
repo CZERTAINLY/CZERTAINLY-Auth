@@ -11,6 +11,7 @@ namespace Czertainly.Auth.Models.Mappings
         public UserProfile()
         {
             CreateMap<UserRequestDto, User>();
+            CreateMap<UserUpdateRequestDto, User>();
             CreateMap<User, UserDto>()
                 .ForMember(dest => dest.Certificate, o => o.MapFrom(src => src.CertificateFingerprint == null ? null : new UserCertificateDto { Uuid = src.CertificateUuid, Fingerprint = src.CertificateFingerprint }));
             CreateMap<User, UserDetailDto>()

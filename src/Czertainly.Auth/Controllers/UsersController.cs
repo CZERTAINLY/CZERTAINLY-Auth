@@ -19,9 +19,9 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpGet("profile")]
-        public async Task<ActionResult<UserProfileDto>> GetUserProfile([FromHeader] UserProfileRequestDto dto)
+        public async Task<ActionResult<AuthenticationResponseDto>> GetUserProfile([FromHeader(Name = "x-app-certificate")] string certificate)
         {
-            var result = await _userService.GetUserProfileAsync(dto);
+            var result = await _userService.AuthenticateUserAsync(certificate);
 
             return Ok(result);
         }
@@ -46,18 +46,16 @@ namespace Czertainly.Auth.Controllers
         [HttpGet("{userUuid}")]
         public async Task<ActionResult<UserDetailDto>> GetUserAsync([FromRoute] Guid userUuid)
         {
-            var entityKey = new EntityKey(userUuid);
-            var result = await _userService.GetDetailAsync(entityKey);
+            var result = await _userService.GetDetailAsync(userUuid);
 
             return Ok(result);
         }
 
         [HttpPut("{userUuid}")]
         [ServiceFilter(typeof(ValidationFilter))]
-        public async Task<ActionResult<UserDto>> UpdateUserAsync([FromRoute] Guid userUuid, [FromBody] UserRequestDto userRequestDto)
+        public async Task<ActionResult<UserDto>> UpdateUserAsync([FromRoute] Guid userUuid, [FromBody] UserUpdateRequestDto userRequestDto)
         {
-            var entityKey = new EntityKey(userUuid);
-            var result = await _userService.UpdateAsync(entityKey, userRequestDto);
+            var result = await _userService.UpdateAsync(userUuid, userRequestDto);
 
             return Ok(result);
         }
@@ -65,16 +63,23 @@ namespace Czertainly.Auth.Controllers
         [HttpDelete("{userUuid}")]
         public async Task<ActionResult<UserDto>> DeleteUserAsync([FromRoute] Guid userUuid)
         {
-            var entityKey = new EntityKey(userUuid);
-            await _userService.DeleteAsync(entityKey);
+            await _userService.DeleteAsync(userUuid);
 
             return NoContent();
+        }
+
+        [HttpGet("{userUuid}/permissions")]
+        public async Task<ActionResult<MergedPermissionsDto>> GetPermissionsAsync([FromServices] IPermissionService permissionService, [FromRoute] Guid userUuid)
+        {
+            var result = await permissionService.GetUserPermissionsAsync(userUuid);
+
+            return Ok(result);
         }
 
         [HttpPatch("{userUuid}/roles")]
         public async Task<ActionResult<UserDetailDto>> AssignRolesAsync([FromRoute] Guid userUuid, [FromBody] IEnumerable<Guid> roleUuids)
         {
-            var result = await _userService.AssignRolesAsync(new EntityKey(userUuid), roleUuids);
+            var result = await _userService.AssignRolesAsync(userUuid, roleUuids);
 
             return Ok(result);
         }
@@ -82,7 +87,7 @@ namespace Czertainly.Auth.Controllers
         [HttpPut("{userUuid}/roles/{roleUuid}")]
         public async Task<ActionResult<UserDetailDto>> AssignRoleAsync([FromRoute] Guid userUuid, [FromRoute] Guid roleUuid)
         {
-            var result = await _userService.AssignRoleAsync(new EntityKey(userUuid), new EntityKey(roleUuid));
+            var result = await _userService.AssignRoleAsync(userUuid, roleUuid);
 
             return Ok(result);
         }

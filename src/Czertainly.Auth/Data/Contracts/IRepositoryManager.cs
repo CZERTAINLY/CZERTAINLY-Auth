@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Czertainly.Auth.Data.Contracts
 {
@@ -14,6 +11,7 @@ namespace Czertainly.Auth.Data.Contracts
         IResourceRepository Resource { get; }
         IActionRepository Action { get; }
 
+        Task<IDbContextTransaction> BeginTransactionAsync();
         Task SaveAsync();
     }
 }

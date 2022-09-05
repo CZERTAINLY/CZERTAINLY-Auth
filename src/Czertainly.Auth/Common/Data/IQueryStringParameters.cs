@@ -9,8 +9,8 @@ namespace Czertainly.Auth.Common.Data
     public interface IQueryStringParameters
     {
         // pagination
-        public int PageNumber { get; set; }
-        public int ItemsPerPage { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
 
         // sorting
         public string Sort { get; set; }

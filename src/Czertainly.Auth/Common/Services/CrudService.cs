@@ -43,25 +43,25 @@ namespace Czertainly.Auth.Common.Services
             return _mapper.Map<TResponseDto>(entity);
         }
 
-        public virtual async Task<TDetailResponseDto> GetDetailAsync(IEntityKey key)
+        public virtual async Task<TDetailResponseDto> GetDetailAsync(Guid key)
         {
             var entity = await _repository.GetByKeyAsync(key);
 
             return _mapper.Map<TDetailResponseDto>(entity);
         }
 
-        public virtual async Task<TResponseDto> UpdateAsync(IEntityKey key, ICrudRequestDto dto)
+        public virtual async Task<TResponseDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
-            var entity = _mapper.Map<TEntity>(dto);
-            if (key.Uuid.HasValue) entity.Uuid = key.Uuid.Value;
+            var entity = await _repository.GetByKeyAsync(key);
+            _mapper.Map(dto, entity);
 
-            await _repository.UpdateAsync(key, entity);
+            //await _repository.UpdateAsync(key, entity);
             await _repositoryManager.SaveAsync();
 
             return _mapper.Map<TResponseDto>(entity);
         }
 
-        public virtual async Task DeleteAsync(IEntityKey key)
+        public virtual async Task DeleteAsync(Guid key)
         {
             await _repository.DeleteAsync(key);
             await _repositoryManager.SaveAsync();

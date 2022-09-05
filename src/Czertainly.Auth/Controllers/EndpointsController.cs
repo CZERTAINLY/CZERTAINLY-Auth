@@ -29,8 +29,7 @@ namespace Czertainly.Auth.Controllers
         [HttpGet("{endpointUuid}")]
         public async Task<ActionResult<EndpointDetailDto>> GetUserAsync([FromRoute] Guid endpointUuid)
         {
-            var entityKey = new EntityKey(endpointUuid);
-            var result = await _endpointService.GetDetailAsync(entityKey);
+            var result = await _endpointService.GetDetailAsync(endpointUuid);
 
             return Ok(result);
         }
