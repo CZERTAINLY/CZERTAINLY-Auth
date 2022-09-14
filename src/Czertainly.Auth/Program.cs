@@ -65,18 +65,18 @@ try
 
     var app = builder.Build();
 
-    // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
+    }
 
-        // run migrations in development environment
-        using (var scope = app.Services.CreateScope())
-        {
-            var dataContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
-            dataContext.Database.Migrate();
-        }
+    // run migrations
+    // TODO: handle migrations differently in production, not run during deployment
+    using (var scope = app.Services.CreateScope())
+    {
+        var dataContext = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+        dataContext.Database.Migrate();
     }
 
     app.UseMiddleware<ExceptionMiddleware>();
