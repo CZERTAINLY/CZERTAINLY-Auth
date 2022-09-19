@@ -19,16 +19,16 @@ public class User : BaseEntity
     [Column("last_name")]
     public string? LastName { get; set; }
 
-    [Required]
     [Column("email")]
     public string? Email { get; set; }
 
     [Required]
     [Column("enabled")]
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; }
 
+    [Required]
     [Column("system_user")]
-    public bool SystemUser { get; set; } = false;
+    public bool SystemUser { get; set; }
 
     [Column("certificate_uuid")]
     public Guid? CertificateUuid { get; set; }

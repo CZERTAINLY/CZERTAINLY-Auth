@@ -13,5 +13,10 @@ namespace Czertainly.Auth.Services
         {
         }
 
+        public async Task<List<ResourceDetailDto>> GetAllResourcesAsync()
+        {
+            var resources = await _repositoryManager.Resource.GetResourcesWithActions();
+            return _mapper.Map<List<ResourceDetailDto>>(resources);
+        }
     }
 }

@@ -31,6 +31,6 @@ public class Permission : BaseEntity
 
     [Required]
     [Column("is_allowed")]
-    public bool IsAllowed { get; set; } = true;
+    public bool IsAllowed { get; set; }
 
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Czertainly.Auth.Common.Exceptions;
+using Czertainly.Auth.Common.Helpers;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
@@ -36,7 +37,7 @@ namespace Czertainly.Auth.Services
 
             var endpointsMapping = await _repositoryManager.Endpoint.GetExistingEndpointsMap();
             var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
-            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => $"{a.Resource.Name}.{a.Name}");
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
 
             var transaction = await _repositoryManager.BeginTransactionAsync();
 
@@ -54,7 +55,7 @@ namespace Czertainly.Auth.Services
                     // check if to update resource
                     if (!resourcesMapping.TryGetValue(syncEndpointDto.ResourceName, out var endpointResource))
                     {
-                        var dto = new ResourceRequestDto { Name = syncEndpointDto.ResourceName, ListingEndpoint = syncEndpointDto.IsListingEndpoint ? syncEndpointDto.RouteTemplate : null };
+                        var dto = new ResourceRequestDto { Name = syncEndpointDto.ResourceName, DisplayName = DisplayNameHelper.GetDisplayName(syncEndpointDto.ResourceName), ListingEndpoint = syncEndpointDto.IsListingEndpoint ? syncEndpointDto.RouteTemplate : null };
                         var resourceDto = await _resourceService.CreateAsync(dto);
                         result.Resources.Added.Add(resourceDto);
 
@@ -67,17 +68,17 @@ namespace Czertainly.Auth.Services
                     Models.Entities.Action? endpointAction = null;
                     if (syncEndpointDto.ActionName != "ANY")
                     {
-                        var endpointActionMapKey = $"{syncEndpointDto.ResourceName}.{syncEndpointDto.ActionName}";
-                        if (!actionsMapping.TryGetValue(endpointActionMapKey, out endpointAction))
+                        if (!actionsMapping.TryGetValue(syncEndpointDto.ActionName, out endpointAction))
                         {
-                            var dto = new ActionRequestDto { Name = syncEndpointDto.ActionName, ResourceUuid = endpointResource.Uuid, ResourceName = syncEndpointDto.ResourceName };
+                            var dto = new ActionRequestDto { Name = syncEndpointDto.ActionName, DisplayName = DisplayNameHelper.GetDisplayName(syncEndpointDto.ActionName) };
                             var actionDto = await _actionService.CreateAsync(dto);
                             result.Actions.Added.Add(actionDto);
 
                             endpointAction = await _repositoryManager.Action.GetByKeyAsync(actionDto.Uuid);
-                            actionsMapping.Add(endpointActionMapKey, endpointAction);
+                            actionsMapping.Add(syncEndpointDto.ActionName, endpointAction);
                         }
-                        actionsUsed.Add(endpointActionMapKey);
+                        actionsUsed.Add(syncEndpointDto.ActionName);
+                        endpointResource.Actions.Add(endpointAction);
                     }
 
                     var endpointMapKey = $"{syncEndpointDto.Method} {syncEndpointDto.RouteTemplate}";

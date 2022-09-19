@@ -7,7 +7,6 @@ namespace Czertainly.Auth.Models.Entities.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.Property(u => u.Enabled).HasDefaultValue(true);
             builder
                 .HasMany(u => u.Roles)
                 .WithMany(r => r.Users)

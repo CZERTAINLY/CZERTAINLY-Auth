@@ -11,5 +11,9 @@ namespace Czertainly.Auth.Data.Repositiories
         {
         }
 
+        public async Task<List<Resource>> GetResourcesWithActions()
+        {
+            return await _dbSet.Include(r => r.Actions).ToListAsync();
+        }
     }
 }

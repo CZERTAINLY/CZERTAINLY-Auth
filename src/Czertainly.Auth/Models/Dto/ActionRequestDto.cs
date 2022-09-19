@@ -8,10 +8,7 @@ namespace Czertainly.Auth.Models.Dto
         [Required]
         public string? Name { get; init; }
 
-        public Guid ResourceUuid { get; init; }
-
-        [Required]
-        public string? ResourceName { get; init; }
+        public string? DisplayName { get; init; }
 
     }
 }

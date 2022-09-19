@@ -7,6 +7,9 @@ namespace Czertainly.Auth.Models.Dto
     {
         [Required]
         public string? Name { get; init; }
+
+        public string? DisplayName { get; init; }
+
         public string? ListingEndpoint { get; init; }
 
     }

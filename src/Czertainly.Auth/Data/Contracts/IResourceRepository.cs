@@ -5,5 +5,6 @@ namespace Czertainly.Auth.Data.Contracts
 {
     public interface IResourceRepository : IBaseRepository<Resource>
     {
+        Task<List<Resource>> GetResourcesWithActions();
     }
 }
