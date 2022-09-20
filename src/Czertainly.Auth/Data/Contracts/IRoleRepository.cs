@@ -5,5 +5,6 @@ namespace Czertainly.Auth.Data.Contracts
 {
     public interface IRoleRepository : IBaseRepository<Role>
     {
+        Task<IEnumerable<Role>> GetUserRolesAsync(Guid userUuid);
     }
 }

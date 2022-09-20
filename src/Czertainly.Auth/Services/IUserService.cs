@@ -8,7 +8,12 @@ namespace Czertainly.Auth.Services
     public interface IUserService : ICrudService<UserDto, UserDetailDto>
     {
         Task<AuthenticationResponseDto> AuthenticateUserAsync(string certificate);
-        Task<UserDetailDto> AssignRoleAsync(Guid userKey, Guid roleKey);
-        Task<UserDetailDto> AssignRolesAsync(Guid userKey, IEnumerable<Guid> roleUuids);
+
+        Task<UserDetailDto> EnableUserAsync(Guid userUuid, bool enableFlag);
+
+        Task<UserDetailDto> AssignRoleAsync(Guid userUuid, Guid roleUuid);
+        Task<UserDetailDto> AssignRolesAsync(Guid userUuid, IEnumerable<Guid> roleUuids);
+        Task<UserDetailDto> RemoveRoleAsync(Guid userUuid, Guid roleUuid);
+
     }
 }

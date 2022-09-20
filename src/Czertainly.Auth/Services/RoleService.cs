@@ -12,10 +12,9 @@ namespace Czertainly.Auth.Services
 
         public RoleService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Role, mapper)
         {
-
         }
 
-        public override async Task<RoleDto> UpdateAsync(Guid key, ICrudRequestDto dto)
+        public override async Task<RoleDetailDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
             var role = await _repository.GetByKeyAsync(key);
             if (role.SystemRole) throw new Exception("Cannot update system role!");
@@ -29,6 +28,12 @@ namespace Czertainly.Auth.Services
             if (role.SystemRole) throw new Exception("Cannot delete system role!");
 
             await base.DeleteAsync(key);
+        }
+
+        public async Task<List<RoleDto>> GetUserRolesAsync(Guid userUuid)
+        {
+            var roles = await _repositoryManager.Role.GetUserRolesAsync(userUuid);
+            return _mapper.Map<List<RoleDto>>(roles);
         }
     }
 }

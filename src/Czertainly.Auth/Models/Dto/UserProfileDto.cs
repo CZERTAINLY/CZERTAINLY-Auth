@@ -12,6 +12,6 @@ namespace Czertainly.Auth.Models.Dto
         public List<string> Roles { get; init; } = new List<string>();
 
         [Required]
-        public MergedPermissionsDto Permissions { get; init; }
+        public SubjectPermissionsDto Permissions { get; init; }
     }
 }

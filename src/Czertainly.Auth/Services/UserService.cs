@@ -21,7 +21,7 @@ namespace Czertainly.Auth.Services
             _permissionService = permissionService;
         }
 
-        public override async Task<UserDto> UpdateAsync(Guid key, ICrudRequestDto dto)
+        public override async Task<UserDetailDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
             var user = await _repository.GetByKeyAsync(key);
             if (user.SystemUser) throw new Exception("Cannot update system user!");
@@ -62,10 +62,20 @@ namespace Czertainly.Auth.Services
             return result;
         }
 
-        public async Task<UserDetailDto> AssignRoleAsync(Guid userKey, Guid roleKey)
+        public async Task<UserDetailDto> EnableUserAsync(Guid userUuid, bool enableFlag)
         {
-            var user = await _repository.GetByKeyAsync(userKey);
-            var role = await _repositoryManager.Role.GetByKeyAsync(roleKey);
+            var user = await _repository.GetByKeyAsync(userUuid);
+
+            user.Enabled = enableFlag;
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<UserDetailDto>(user);
+        }
+
+        public async Task<UserDetailDto> AssignRoleAsync(Guid userUuid, Guid roleUuid)
+        {
+            var user = await _repository.GetByKeyAsync(userUuid);
+            var role = await _repositoryManager.Role.GetByKeyAsync(roleUuid);
 
             user.Roles.Add(role);
             await _repositoryManager.SaveAsync();
@@ -73,13 +83,24 @@ namespace Czertainly.Auth.Services
             return _mapper.Map<UserDetailDto>(user);
         }
 
-        public async Task<UserDetailDto> AssignRolesAsync(Guid userKey, IEnumerable<Guid> roleUuids)
+        public async Task<UserDetailDto> AssignRolesAsync(Guid userUuid, IEnumerable<Guid> roleUuids)
         {
-            var user = await _repository.GetByKeyAsync(userKey);
+            var user = await _repository.GetByKeyAsync(userUuid);
             var roles = await _repositoryManager.Role.GetByUuidsAsync(roleUuids);
 
             user.Roles.Clear();
             foreach (var role in roles) user.Roles.Add(role);
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<UserDetailDto>(user);
+        }
+
+        public async Task<UserDetailDto> RemoveRoleAsync(Guid userUuid, Guid roleUuid)
+        {
+            var user = await _repository.GetByKeyAsync(userUuid);
+            var role = await _repositoryManager.Role.GetByKeyAsync(roleUuid);
+
+            user.Roles.Remove(role);
             await _repositoryManager.SaveAsync();
 
             return _mapper.Map<UserDetailDto>(user);

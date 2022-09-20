@@ -8,7 +8,6 @@ namespace Czertainly.Auth.Models.Mappings
     {
         public PermissionProfile()
         {
-            CreateMap<Permission, PermissionDto>();
         }
     }
 }

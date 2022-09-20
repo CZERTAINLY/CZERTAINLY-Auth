@@ -19,7 +19,7 @@ namespace Czertainly.Auth.Services
             _actionService = actionService;
         }
 
-        public override async Task<EndpointDto> CreateAsync(ICrudRequestDto dto)
+        public override async Task<EndpointDetailDto> CreateAsync(ICrudRequestDto dto)
         {
             var endpointDto = (EndpointRequestDto)dto;
             if (EndpointExists(endpointDto, out _)) throw new RequestException("Endpoint with same signature already exists!");

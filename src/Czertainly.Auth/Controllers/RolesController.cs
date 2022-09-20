@@ -28,7 +28,7 @@ namespace Czertainly.Auth.Controllers
 
         [HttpPost]
         [ServiceFilter(typeof(ValidationFilter))]
-        public async Task<ActionResult<RoleDto>> CreateRoleAsync([FromBody] RoleRequestDto roleRequestDto)
+        public async Task<ActionResult<RoleDetailDto>> CreateRoleAsync([FromBody] RoleRequestDto roleRequestDto)
         {
             var result = await _roleService.CreateAsync(roleRequestDto);
 
@@ -45,7 +45,7 @@ namespace Czertainly.Auth.Controllers
 
         [HttpPut("{roleUuid}")]
         [ServiceFilter(typeof(ValidationFilter))]
-        public async Task<ActionResult<RoleDto>> UpdateRoleAsync([FromRoute] Guid roleUuid, [FromBody] RoleUpdateRequestDto roleRequestDto)
+        public async Task<ActionResult<RoleDetailDto>> UpdateRoleAsync([FromRoute] Guid roleUuid, [FromBody] RoleUpdateRequestDto roleRequestDto)
         {
             var result = await _roleService.UpdateAsync(roleUuid, roleRequestDto);
 
@@ -53,7 +53,7 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpDelete("{roleUuid}")]
-        public async Task<ActionResult<RoleDto>> DeleteRoleAsync([FromRoute] Guid roleUuid)
+        public async Task<ActionResult> DeleteRoleAsync([FromRoute] Guid roleUuid)
         {
             await _roleService.DeleteAsync(roleUuid);
 

@@ -6,16 +6,74 @@ using Czertainly.Auth.Models.Entities;
 
 namespace Czertainly.Auth.Services
 {
-    public class PermissionService : CrudService<Permission, PermissionDto, PermissionDetailDto>, IPermissionService
+    public class PermissionService : IPermissionService
     {
+        private readonly IMapper _mapper;
+        private readonly IPermissionRepository _repository;
+        private readonly IRepositoryManager _repositoryManager;
 
-        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Permission, mapper)
+        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper)
         {
+            _mapper = mapper;
+            _repositoryManager = repositoryManager;
+            _repository = repositoryManager.Permission;
         }
 
-        public async Task<MergedPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
+        #region Retrieving permissions
+
+        public async Task<SubjectPermissionsDto> GetRolePermissionsAsync(Guid roleUuid)
         {
-            var result = new MergedPermissionsDto();
+            var permissions = await _repository.GetRolePermissions(roleUuid);
+
+            return MergePermissions(permissions);
+        }
+
+        public async Task<ResourcePermissionsDto> GetRoleResourcesPermissionsAsync(Guid roleUuid, Guid resourceUuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<ObjectPermissionsDto>> GetRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<SubjectPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
+        {
+            var permissions = await _repository.GetUserPermissions(userUuid);
+
+            return MergePermissions(permissions);
+        }
+
+        #endregion
+
+        #region Updating permissions
+
+        public Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, SubjectPermissionsDto rolePermissions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SaveRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid, List<ObjectPermissionsDto> objectsPermissions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SaveRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid, ObjectPermissionsDto objectPermissions)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        private SubjectPermissionsDto MergePermissions(IEnumerable<Permission> permissions)
+        {
+            var result = new SubjectPermissionsDto();
 
             var resourcesMapping = new SortedDictionary<string, ResourcePermissionsDto>(StringComparer.Ordinal);
             var resourceActionsMapping = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
@@ -23,7 +81,6 @@ namespace Czertainly.Auth.Services
             var objectAllowedActionsMapping = new Dictionary<Guid, HashSet<string>>();
             var objectDeniedActionsMapping = new Dictionary<Guid, HashSet<string>>();
 
-            var permissions = await _repositoryManager.Permission.GetUserPermissions(userUuid);
             foreach (var permission in permissions)
             {
                 // if some role allows all resources and other no, allow all and let overriding on lower level
@@ -35,7 +92,7 @@ namespace Czertainly.Auth.Services
 
                 var resourceName = permission.Resource.Name;
                 if (!resourcesMapping.TryGetValue(resourceName, out var resource)) resourcesMapping.Add(resourceName, resource = new ResourcePermissionsDto { Name = resourceName });
-                if(!permission.ActionUuid.HasValue)
+                if (!permission.ActionUuid.HasValue)
                 {
                     // if some role allows all resource actions and other no, allow all and let overriding on lower level
                     resource.AllowAllActions = resource.AllowAllActions || permission.IsAllowed;

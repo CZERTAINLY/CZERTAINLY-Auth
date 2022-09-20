@@ -6,5 +6,7 @@ namespace Czertainly.Auth.Services
 {
     public interface IRoleService : ICrudService<RoleDto, RoleDetailDto>
     {
+        Task<List<RoleDto>> GetUserRolesAsync(Guid userUuid);
+
     }
 }

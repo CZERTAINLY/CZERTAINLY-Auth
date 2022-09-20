@@ -19,7 +19,5 @@ namespace Czertainly.Auth.Models.Dto
 
         [Required]
         public bool SystemUser { get; init; }
-
-        public UserCertificateDto? Certificate { get; init; }
     }
 }
