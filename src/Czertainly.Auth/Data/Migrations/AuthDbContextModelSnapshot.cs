@@ -18,7 +18,7 @@ namespace Czertainly.Auth.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("auth")
-                .HasAnnotation("ProductVersion", "6.0.7")
+                .HasAnnotation("ProductVersion", "6.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -31,18 +31,20 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnName("uuid")
                         .HasColumnOrder(0);
 
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("display_name");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.Property<Guid>("ResourceUuid")
-                        .HasColumnType("uuid")
-                        .HasColumnName("resource_uuid");
-
                     b.HasKey("Uuid");
 
-                    b.HasIndex("ResourceUuid");
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("action", "auth");
                 });
@@ -100,9 +102,7 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnName("action_uuid");
 
                     b.Property<bool>("IsAllowed")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(true)
                         .HasColumnName("is_allowed");
 
                     b.Property<Guid?>("ObjectUuid")
@@ -143,6 +143,11 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("uuid")
                         .HasColumnOrder(0);
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("display_name");
 
                     b.Property<string>("ListingEndpoint")
                         .HasColumnType("text")
@@ -203,13 +208,6 @@ namespace Czertainly.Auth.Data.Migrations
                             Description = "Internal Czertianly system role with all administrating permissions",
                             Name = "Admin",
                             SystemRole = true
-                        },
-                        new
-                        {
-                            Uuid = new Guid("deb8ad2c-3652-489c-b370-f36fe9703803"),
-                            Description = "Internal Czertianly system role with client operations permissions",
-                            Name = "Operator",
-                            SystemRole = true
                         });
                 });
 
@@ -230,14 +228,11 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnName("certificate_uuid");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("email");
 
                     b.Property<bool>("Enabled")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(true)
                         .HasColumnName("enabled");
 
                     b.Property<string>("FirstName")
@@ -269,7 +264,6 @@ namespace Czertainly.Auth.Data.Migrations
                         {
                             Uuid = new Guid("967679bd-0b75-41eb-8e9e-fef1a5ba4aa6"),
                             CertificateFingerprint = "e1481e7eb80a265189da1c42c21066b006ed46afc1b55dd610a31bb8ec5da8b8",
-                            Email = "superadmin@czertainly.com",
                             Enabled = true,
                             SystemUser = true,
                             Username = "superadmin"
@@ -277,19 +271,25 @@ namespace Czertainly.Auth.Data.Migrations
                         new
                         {
                             Uuid = new Guid("64050556-dce6-42f8-81b6-96e521dd64d7"),
-                            Email = "admin@czertainly.com",
                             Enabled = true,
                             SystemUser = true,
                             Username = "admin"
-                        },
-                        new
-                        {
-                            Uuid = new Guid("3e544eb1-2ec5-40ac-b72e-d8f765413cea"),
-                            Email = "operator@czertainly.com",
-                            Enabled = true,
-                            SystemUser = true,
-                            Username = "operator"
                         });
+                });
+
+            modelBuilder.Entity("resource_action", b =>
+                {
+                    b.Property<Guid>("action_uuid")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("resource_uuid")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("action_uuid", "resource_uuid");
+
+                    b.HasIndex("resource_uuid");
+
+                    b.ToTable("resource_action", "auth");
                 });
 
             modelBuilder.Entity("user_role", b =>
@@ -316,23 +316,7 @@ namespace Czertainly.Auth.Data.Migrations
                         {
                             role_uuid = new Guid("da5668e2-9d94-4375-98c4-d665083edceb"),
                             user_uuid = new Guid("64050556-dce6-42f8-81b6-96e521dd64d7")
-                        },
-                        new
-                        {
-                            role_uuid = new Guid("deb8ad2c-3652-489c-b370-f36fe9703803"),
-                            user_uuid = new Guid("3e544eb1-2ec5-40ac-b72e-d8f765413cea")
                         });
-                });
-
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
-                {
-                    b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
-                        .WithMany()
-                        .HasForeignKey("ResourceUuid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Resource");
                 });
 
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Endpoint", b =>
@@ -373,6 +357,21 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Navigation("Resource");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("resource_action", b =>
+                {
+                    b.HasOne("Czertainly.Auth.Models.Entities.Action", null)
+                        .WithMany()
+                        .HasForeignKey("action_uuid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Czertainly.Auth.Models.Entities.Resource", null)
+                        .WithMany()
+                        .HasForeignKey("resource_uuid")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("user_role", b =>

@@ -13,10 +13,19 @@ public class Resource : BaseEntity
     [Column("name")]
     public string Name { get; set; }
 
+    [Required]
+    [Column("display_name")]
+    public string DisplayName { get; set; }
+
     [Column("listing_endpoint")]
     public string? ListingEndpoint { get; set; }
 
-    //public ICollection<Action> Actions { get; set; }
+    public ICollection<Action> Actions { get; set; }
 
     //public ICollection<Permission> Permissions { get; set; }
+
+    public Resource()
+    {
+        Actions = new List<Action>();
+    }
 }

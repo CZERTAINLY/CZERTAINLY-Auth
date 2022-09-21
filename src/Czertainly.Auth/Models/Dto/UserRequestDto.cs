@@ -12,9 +12,8 @@ namespace Czertainly.Auth.Models.Dto
         
         public string? LastName { get; init; }
 
-        public bool Enabled { get; init; }
+        public bool? Enabled { get; init; } = true;
         
-        [Required]
         [EmailAddress]
         public string? Email { get; init; }
 

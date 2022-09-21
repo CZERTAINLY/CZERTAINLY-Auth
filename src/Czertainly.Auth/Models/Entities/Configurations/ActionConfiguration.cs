@@ -7,7 +7,6 @@ namespace Czertainly.Auth.Models.Entities.Configurations
     {
         public void Configure(EntityTypeBuilder<Action> builder)
         {
-            builder.Navigation(a => a.Resource).AutoInclude();
         }
     }
 }

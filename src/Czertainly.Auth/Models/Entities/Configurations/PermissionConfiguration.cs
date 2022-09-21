@@ -7,7 +7,6 @@ namespace Czertainly.Auth.Models.Entities.Configurations
     {
         public void Configure(EntityTypeBuilder<Permission> builder)
         {
-            builder.Property(p => p.IsAllowed).HasDefaultValue(true);
         }
     }
 }

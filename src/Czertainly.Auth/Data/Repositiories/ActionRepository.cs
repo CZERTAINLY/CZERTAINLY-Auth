@@ -10,9 +10,9 @@ namespace Czertainly.Auth.Data.Repositiories
         {
         }
 
-        public async Task<Models.Entities.Action?> GetResourceActionAsync(string actionName, string resourceName)
+        public async Task<Models.Entities.Action?> GetActionByNameAsync(string actionName)
         {
-            return await _dbSet.Include(a => a.Resource).Where(a => a.Name.Equals(actionName, StringComparison.Ordinal) && a.Resource.Name.Equals(resourceName, StringComparison.Ordinal)).FirstOrDefaultAsync();
+            return await _dbSet.Where(a => a.Name.Equals(actionName, StringComparison.Ordinal)).FirstOrDefaultAsync();
         }
     }
 }

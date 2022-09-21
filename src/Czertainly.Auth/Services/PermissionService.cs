@@ -6,16 +6,173 @@ using Czertainly.Auth.Models.Entities;
 
 namespace Czertainly.Auth.Services
 {
-    public class PermissionService : CrudService<Permission, PermissionDto, PermissionDetailDto>, IPermissionService
+    public class PermissionService : IPermissionService
     {
+        private readonly IMapper _mapper;
+        private readonly IPermissionRepository _repository;
+        private readonly IRepositoryManager _repositoryManager;
 
-        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Permission, mapper)
+        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper)
         {
+            _mapper = mapper;
+            _repositoryManager = repositoryManager;
+            _repository = repositoryManager.Permission;
         }
 
-        public async Task<MergedPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
+        #region Retrieving permissions
+
+        public async Task<SubjectPermissionsDto> GetRolePermissionsAsync(Guid roleUuid)
         {
-            var result = new MergedPermissionsDto();
+            var permissions = await _repository.GetRolePermissions(roleUuid);
+
+            return MergePermissions(permissions);
+        }
+
+        public async Task<ResourcePermissionsDto> GetRoleResourcesPermissionsAsync(Guid roleUuid, Guid resourceUuid)
+        {
+            var permissions = await _repository.GetRoleResourcePermissions(roleUuid, resourceUuid);
+            var subjectPermissions = MergePermissions(permissions);
+
+            if(subjectPermissions.Resources.Count != 0) return subjectPermissions.Resources[0];
+
+            var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
+            return new ResourcePermissionsDto { Name = resource.Name };
+        }
+
+        public async Task<List<ObjectPermissionsDto>> GetRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid)
+        {
+            var result = new List<ObjectPermissionsDto>();
+            var objectsMapping = new Dictionary<Guid, ObjectPermissionsDto>();
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Uuid);
+
+            var permissions = await _repository.GetRoleResourceObjectsPermissions(roleUuid, resourceUuid);
+            foreach (var permission in permissions)
+            {
+                if (!permission.ActionUuid.HasValue || !permission.ObjectUuid.HasValue) continue;
+                if (!objectsMapping.TryGetValue(permission.ObjectUuid.Value, out var objectPermissions)) objectsMapping.Add(permission.ObjectUuid.Value, objectPermissions = new ObjectPermissionsDto { Uuid = permission.ObjectUuid.Value });
+                else
+                {
+                    var actionName = actionsMapping[permission.ActionUuid.Value].Name;
+                    if (permission.IsAllowed) objectPermissions.Allow.Add(actionName);
+                    else objectPermissions.Deny.Add(actionName);
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<SubjectPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
+        {
+            var permissions = await _repository.GetUserPermissions(userUuid);
+
+            return MergePermissions(permissions);
+        }
+
+        #endregion
+
+        #region Updating permissions
+
+        public async Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, RolePermissionsRequestDto rolePermissions)
+        {
+            _repository.DeleteRolePermissionsWithoutObjects(roleUuid);
+
+            var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
+
+            if (rolePermissions.AllowAllResources) _repository.Create(new Permission { RoleUuid = roleUuid, IsAllowed = true });
+            foreach (var resourcePermissions in rolePermissions.Resources)
+            {
+                var resourceUuid = resourcesMapping[resourcePermissions.Name].Uuid;
+                if(resourcePermissions.AllowAllActions) _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, IsAllowed = true });
+                else
+                {
+                    foreach (var actionName in resourcePermissions.Actions)
+                    {
+                        var actionUuid = actionsMapping[actionName].Uuid;
+                        _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, ActionUuid = actionUuid, IsAllowed = true });
+                    }
+                }
+
+                if(resourcePermissions.Objects != null)
+                {
+                    _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
+                    foreach (var objectPermissions in resourcePermissions.Objects)
+                    {
+                        AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
+                    }
+                }
+            }
+
+            await _repositoryManager.SaveAsync();
+
+            return await GetRolePermissionsAsync(roleUuid);
+        }
+
+        public async Task SaveRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid, List<ObjectPermissionsRequestDto> objectsPermissions)
+        {
+            _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
+
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
+            var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
+            foreach (var objectPermissions in objectsPermissions)
+            {
+                AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
+            }
+
+            await _repositoryManager.SaveAsync();
+        }
+
+        public async Task SaveRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid, ObjectPermissionsRequestDto objectPermissions)
+        {
+            _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
+            var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
+            AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
+
+            await _repositoryManager.SaveAsync();
+        }
+
+        public async Task DeleteRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid)
+        {
+            _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
+
+            await _repositoryManager.SaveAsync();
+        }
+
+        #endregion
+
+        private void AddRoleResourceObjectPermissions(Guid roleUuid, Guid resourceUuid, ObjectPermissionsRequestDto objectPermissions, List<string>? resourceActions, Dictionary<string, Models.Entities.Action> actionsMapping)
+        {
+            var allowActions = resourceActions == null ? Enumerable.Empty<string>() : objectPermissions.Allow.Where(a => !resourceActions.Contains(a));
+            foreach (var allowAction in allowActions)
+            {
+                var actionUuid = actionsMapping[allowAction].Uuid;
+                _repository.Create(new Permission
+                {
+                    RoleUuid = roleUuid,
+                    ResourceUuid = resourceUuid,
+                    ActionUuid = actionUuid,
+                    ObjectUuid = objectPermissions.Uuid,
+                    IsAllowed = true
+                });
+            }
+            foreach (var denyAction in objectPermissions.Deny)
+            {
+                var actionUuid = actionsMapping[denyAction].Uuid;
+                _repository.Create(new Permission
+                {
+                    RoleUuid = roleUuid,
+                    ResourceUuid = resourceUuid,
+                    ActionUuid = actionUuid,
+                    ObjectUuid = objectPermissions.Uuid,
+                    IsAllowed = false
+                });
+            }
+        }
+
+        private SubjectPermissionsDto MergePermissions(IEnumerable<Permission> permissions)
+        {
+            var result = new SubjectPermissionsDto();
 
             var resourcesMapping = new SortedDictionary<string, ResourcePermissionsDto>(StringComparer.Ordinal);
             var resourceActionsMapping = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
@@ -23,7 +180,6 @@ namespace Czertainly.Auth.Services
             var objectAllowedActionsMapping = new Dictionary<Guid, HashSet<string>>();
             var objectDeniedActionsMapping = new Dictionary<Guid, HashSet<string>>();
 
-            var permissions = await _repositoryManager.Permission.GetUserPermissions(userUuid);
             foreach (var permission in permissions)
             {
                 // if some role allows all resources and other no, allow all and let overriding on lower level
@@ -35,7 +191,7 @@ namespace Czertainly.Auth.Services
 
                 var resourceName = permission.Resource.Name;
                 if (!resourcesMapping.TryGetValue(resourceName, out var resource)) resourcesMapping.Add(resourceName, resource = new ResourcePermissionsDto { Name = resourceName });
-                if(!permission.ActionUuid.HasValue)
+                if (!permission.ActionUuid.HasValue)
                 {
                     // if some role allows all resource actions and other no, allow all and let overriding on lower level
                     resource.AllowAllActions = resource.AllowAllActions || permission.IsAllowed;

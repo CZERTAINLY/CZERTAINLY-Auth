@@ -4,6 +4,6 @@ namespace Czertainly.Auth.Data.Contracts
 {
     public interface IActionRepository : IBaseRepository<Models.Entities.Action>
     {
-        Task<Models.Entities.Action?> GetResourceActionAsync(string actionName, string resourceName);
+        Task<Models.Entities.Action?> GetActionByNameAsync(string actionName);
     }
 }

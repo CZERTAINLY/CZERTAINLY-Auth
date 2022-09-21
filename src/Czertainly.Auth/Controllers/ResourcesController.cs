@@ -19,17 +19,9 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<PagedResponse<ResourceDto>>> GetResourcesAsync([FromQuery] QueryRequestDto query)
+        public async Task<ActionResult<List<ResourceDetailDto>>> GetResourcesAsync()
         {
-            var result = await _resourceService.GetAsync(query);
-
-            return Ok(result);
-        }
-
-        [HttpGet("{resourceUuid}")]
-        public async Task<ActionResult<ResourceDetailDto>> GetResourceAsync([FromRoute] Guid resourceUuid)
-        {
-            var result = await _resourceService.GetDetailAsync(resourceUuid);
+            var result = await _resourceService.GetAllResourcesAsync();
 
             return Ok(result);
         }
