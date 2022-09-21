@@ -210,13 +210,6 @@ namespace Czertainly.Auth.Data.Migrations
                             Description = "Internal Czertianly system role with all administrating permissions",
                             Name = "Admin",
                             SystemRole = true
-                        },
-                        new
-                        {
-                            Uuid = new Guid("deb8ad2c-3652-489c-b370-f36fe9703803"),
-                            Description = "Internal Czertianly system role with client operations permissions",
-                            Name = "Operator",
-                            SystemRole = true
                         });
                 });
 
@@ -273,7 +266,6 @@ namespace Czertainly.Auth.Data.Migrations
                         {
                             Uuid = new Guid("967679bd-0b75-41eb-8e9e-fef1a5ba4aa6"),
                             CertificateFingerprint = "e1481e7eb80a265189da1c42c21066b006ed46afc1b55dd610a31bb8ec5da8b8",
-                            Email = "superadmin@czertainly.com",
                             Enabled = true,
                             SystemUser = true,
                             Username = "superadmin"
@@ -281,18 +273,9 @@ namespace Czertainly.Auth.Data.Migrations
                         new
                         {
                             Uuid = new Guid("64050556-dce6-42f8-81b6-96e521dd64d7"),
-                            Email = "admin@czertainly.com",
                             Enabled = true,
                             SystemUser = true,
                             Username = "admin"
-                        },
-                        new
-                        {
-                            Uuid = new Guid("3e544eb1-2ec5-40ac-b72e-d8f765413cea"),
-                            Email = "operator@czertainly.com",
-                            Enabled = true,
-                            SystemUser = true,
-                            Username = "operator"
                         });
                 });
 
@@ -335,11 +318,6 @@ namespace Czertainly.Auth.Data.Migrations
                         {
                             role_uuid = new Guid("da5668e2-9d94-4375-98c4-d665083edceb"),
                             user_uuid = new Guid("64050556-dce6-42f8-81b6-96e521dd64d7")
-                        },
-                        new
-                        {
-                            role_uuid = new Guid("deb8ad2c-3652-489c-b370-f36fe9703803"),
-                            user_uuid = new Guid("3e544eb1-2ec5-40ac-b72e-d8f765413cea")
                         });
                 });
 

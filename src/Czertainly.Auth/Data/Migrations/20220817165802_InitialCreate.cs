@@ -203,8 +203,7 @@ namespace Czertainly.Auth.Data.Migrations
                 values: new object[,]
                 {
                     { new Guid("d34f960b-75c9-4184-ba97-665d30a9ee8a"), "Internal Czertianly system role with all permissions", "Superadmin", true },
-                    { new Guid("da5668e2-9d94-4375-98c4-d665083edceb"), "Internal Czertianly system role with all administrating permissions", "Admin", true },
-                    { new Guid("deb8ad2c-3652-489c-b370-f36fe9703803"), "Internal Czertianly system role with client operations permissions", "Operator", true }
+                    { new Guid("da5668e2-9d94-4375-98c4-d665083edceb"), "Internal Czertianly system role with all administrating permissions", "Admin", true }
                 });
 
             migrationBuilder.InsertData(
@@ -213,9 +212,8 @@ namespace Czertainly.Auth.Data.Migrations
                 columns: new[] { "uuid", "certificate_fingerprint", "certificate_uuid", "email", "enabled", "first_name", "last_name", "system_user", "username" },
                 values: new object[,]
                 {
-                    { new Guid("3e544eb1-2ec5-40ac-b72e-d8f765413cea"), null, null, "operator@czertainly.com", true, null, null, true, "operator" },
-                    { new Guid("64050556-dce6-42f8-81b6-96e521dd64d7"), null, null, "admin@czertainly.com", true, null, null, true, "admin" },
-                    { new Guid("967679bd-0b75-41eb-8e9e-fef1a5ba4aa6"), "e1481e7eb80a265189da1c42c21066b006ed46afc1b55dd610a31bb8ec5da8b8", null, "superadmin@czertainly.com", true, null, null, true, "superadmin" }
+                    { new Guid("64050556-dce6-42f8-81b6-96e521dd64d7"), null, null, null, true, null, null, true, "admin" },
+                    { new Guid("967679bd-0b75-41eb-8e9e-fef1a5ba4aa6"), "e1481e7eb80a265189da1c42c21066b006ed46afc1b55dd610a31bb8ec5da8b8", null, null, true, null, null, true, "superadmin" }
                 });
 
             migrationBuilder.InsertData(
@@ -231,8 +229,7 @@ namespace Czertainly.Auth.Data.Migrations
                 values: new object[,]
                 {
                     { new Guid("d34f960b-75c9-4184-ba97-665d30a9ee8a"), new Guid("967679bd-0b75-41eb-8e9e-fef1a5ba4aa6") },
-                    { new Guid("da5668e2-9d94-4375-98c4-d665083edceb"), new Guid("64050556-dce6-42f8-81b6-96e521dd64d7") },
-                    { new Guid("deb8ad2c-3652-489c-b370-f36fe9703803"), new Guid("3e544eb1-2ec5-40ac-b72e-d8f765413cea") }
+                    { new Guid("da5668e2-9d94-4375-98c4-d665083edceb"), new Guid("64050556-dce6-42f8-81b6-96e521dd64d7") }
                 });
 
             migrationBuilder.CreateIndex(

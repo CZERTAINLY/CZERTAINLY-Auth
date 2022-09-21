@@ -2,12 +2,11 @@
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record SubjectPermissionsDto
+    public record RolePermissionsRequestDto
     {
         [Required]
         public bool AllowAllResources { get; set; }
 
-        [Required]
-        public List<ResourcePermissionsDto> Resources { get; init; } = new List<ResourcePermissionsDto>();
+        public List<ResourcePermissionsRequestDto>? Resources { get; init; } = new List<ResourcePermissionsRequestDto>();
     }
 }

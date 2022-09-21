@@ -34,7 +34,7 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpPost("roles/{roleUuid}/permissions")]
-        public async Task<ActionResult<SubjectPermissionsDto>> SaveRolePermissions([FromRoute] Guid roleUuid, [FromBody] SubjectPermissionsDto rolePermissions)
+        public async Task<ActionResult<SubjectPermissionsDto>> SaveRolePermissions([FromRoute] Guid roleUuid, [FromBody] RolePermissionsRequestDto rolePermissions)
         {
             var result = await _permissionService.SaveRolePermissionsAsync(roleUuid, rolePermissions);
 
@@ -50,7 +50,7 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpPost("roles/{roleUuid}/permissions/{resourceUuid}/objects")]
-        public async Task<ActionResult> SaveRoleObjectsPermissions([FromRoute] Guid roleUuid, [FromRoute] Guid resourceUuid, List<ObjectPermissionsDto> objectsPermissions)
+        public async Task<ActionResult> SaveRoleObjectsPermissions([FromRoute] Guid roleUuid, [FromRoute] Guid resourceUuid, List<ObjectPermissionsRequestDto> objectsPermissions)
         {
             await _permissionService.SaveRoleObjectsPermissionsAsync(roleUuid, resourceUuid, objectsPermissions);
 
@@ -58,7 +58,7 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpPut("roles/{roleUuid}/permissions/{resourceUuid}/objects/{objectUuid}")]
-        public async Task<ActionResult> SaveRoleObjectPermissions([FromRoute] Guid roleUuid, [FromRoute] Guid resourceUuid, [FromRoute] Guid objectUuid, ObjectPermissionsDto objectPermissions)
+        public async Task<ActionResult> SaveRoleObjectPermissions([FromRoute] Guid roleUuid, [FromRoute] Guid resourceUuid, [FromRoute] Guid objectUuid, ObjectPermissionsRequestDto objectPermissions)
         {
             await _permissionService.SaveRoleObjectPermissionsAsync(roleUuid, resourceUuid, objectUuid, objectPermissions);
 
@@ -66,9 +66,9 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpDelete("roles/{roleUuid}/permissions/{resourceUuid}/objects/{objectUuid}")]
-        public async Task<ActionResult> DeleteRoleObjectPermissions([FromRoute] Guid roleUuid, [FromRoute] Guid resourceUuid, [FromRoute] Guid objectUuid)
+        public ActionResult DeleteRoleObjectPermissions([FromRoute] Guid roleUuid, [FromRoute] Guid resourceUuid, [FromRoute] Guid objectUuid)
         {
-            await _permissionService.DeleteRoleObjectPermissionsAsync(roleUuid, resourceUuid, objectUuid);
+            _permissionService.DeleteRoleObjectPermissionsAsync(roleUuid, resourceUuid, objectUuid);
 
             return NoContent();
         }
