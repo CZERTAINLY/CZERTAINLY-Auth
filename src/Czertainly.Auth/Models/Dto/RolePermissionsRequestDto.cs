@@ -7,6 +7,6 @@ namespace Czertainly.Auth.Models.Dto
         [Required]
         public bool AllowAllResources { get; set; }
 
-        public List<ResourcePermissionsRequestDto>? Resources { get; init; } = new List<ResourcePermissionsRequestDto>();
+        public List<ResourcePermissionsRequestDto>? Resources { get; init; }
     }
 }

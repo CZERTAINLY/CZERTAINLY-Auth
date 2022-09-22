@@ -11,7 +11,7 @@ namespace Czertainly.Auth.Models.Dto
         [Required]
         public bool AllowAllActions { get; set; }
 
-        public List<string>? Actions { get; init; } = new List<string>();
+        public List<string>? Actions { get; init; }
 
         public List<ObjectPermissionsRequestDto>? Objects { get; init; }
 

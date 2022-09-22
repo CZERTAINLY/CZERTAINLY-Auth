@@ -8,9 +8,9 @@ namespace Czertainly.Auth.Models.Dto
         [Required]
         public Guid Uuid { get; set; }
 
-        public List<string>? Allow { get; init; } = new List<string>();
+        public List<string>? Allow { get; init; }
 
-        public List<string>? Deny { get; init; } = new List<string>();
+        public List<string>? Deny { get; init; }
 
     }
 }

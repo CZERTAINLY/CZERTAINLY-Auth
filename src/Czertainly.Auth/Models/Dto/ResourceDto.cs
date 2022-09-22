@@ -1,5 +1,6 @@
 ﻿using Czertainly.Auth.Common.Models.Dto;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Czertainly.Auth.Models.Dto
 {
@@ -13,7 +14,8 @@ namespace Czertainly.Auth.Models.Dto
 
         [Required]
         public bool ObjectAccess { get { return !string.IsNullOrEmpty(ListingEndpoint); } }
-        
+
+        [JsonPropertyName("listObjectsEndpoint")]
         public string? ListingEndpoint { get; init; }
 
     }
