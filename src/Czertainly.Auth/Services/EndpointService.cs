@@ -33,13 +33,17 @@ namespace Czertainly.Auth.Services
 
             var resourcesUsed = new HashSet<string>(StringComparer.Ordinal);
             var actionsUsed = new HashSet<string>(StringComparer.Ordinal);
+            //var resourcesActionsUsed = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
             var resourceListingEndpoints = new Dictionary<string, string>(StringComparer.Ordinal);
 
             var endpointsMapping = await _repositoryManager.Endpoint.GetExistingEndpointsMap();
-            var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
+            var resourcesMapping = await _repositoryManager.Resource.GetResourcesMap(r => r.Name);
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
 
             var transaction = await _repositoryManager.BeginTransactionAsync();
+
+            // cleanup relations between resources and actions
+            foreach (var resource in resourcesMapping.Values) resource.Actions.Clear();
 
             try
             {
@@ -128,6 +132,8 @@ namespace Czertainly.Auth.Services
 
                     if (!resourcesUsed.Contains(item.Value.Name)) result.Resources.Unused.Add(_mapper.Map<ResourceDto>(item.Value));
                 }
+
+                // TODO: what to do with permissions that are linked to removed resource-action pair
 
                 // check unused actions
                 foreach (var actionName in actionsUsed) actionsMapping.Remove(actionName);

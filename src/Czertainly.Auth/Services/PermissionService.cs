@@ -41,8 +41,7 @@ namespace Czertainly.Auth.Services
 
         public async Task<List<ObjectPermissionsDto>> GetRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid)
         {
-            var result = new List<ObjectPermissionsDto>();
-            var objectsMapping = new Dictionary<Guid, ObjectPermissionsDto>();
+            var objectsMapping = new SortedDictionary<Guid, ObjectPermissionsDto>();
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Uuid);
 
             var permissions = await _repository.GetRoleResourceObjectsPermissions(roleUuid, resourceUuid);
@@ -50,15 +49,13 @@ namespace Czertainly.Auth.Services
             {
                 if (!permission.ActionUuid.HasValue || !permission.ObjectUuid.HasValue) continue;
                 if (!objectsMapping.TryGetValue(permission.ObjectUuid.Value, out var objectPermissions)) objectsMapping.Add(permission.ObjectUuid.Value, objectPermissions = new ObjectPermissionsDto { Uuid = permission.ObjectUuid.Value });
-                else
-                {
-                    var actionName = actionsMapping[permission.ActionUuid.Value].Name;
-                    if (permission.IsAllowed) objectPermissions.Allow.Add(actionName);
-                    else objectPermissions.Deny.Add(actionName);
-                }
+
+                var actionName = actionsMapping[permission.ActionUuid.Value].Name;
+                if (permission.IsAllowed) objectPermissions.Allow.Add(actionName);
+                else objectPermissions.Deny.Add(actionName);
             }
 
-            return result;
+            return objectsMapping.Values.ToList();
         }
 
         public async Task<SubjectPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
@@ -80,25 +77,29 @@ namespace Czertainly.Auth.Services
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
 
             if (rolePermissions.AllowAllResources) _repository.Create(new Permission { RoleUuid = roleUuid, IsAllowed = true });
-            foreach (var resourcePermissions in rolePermissions.Resources)
+            if (rolePermissions.Resources != null)
             {
-                var resourceUuid = resourcesMapping[resourcePermissions.Name].Uuid;
-                if(resourcePermissions.AllowAllActions) _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, IsAllowed = true });
-                else
+                foreach (var resourcePermissions in rolePermissions.Resources)
                 {
-                    foreach (var actionName in resourcePermissions.Actions)
+                    var resourceUuid = resourcesMapping[resourcePermissions.Name].Uuid;
+                    if (resourcePermissions.AllowAllActions) _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, IsAllowed = true });
+                    else if(resourcePermissions.Actions != null)
                     {
-                        var actionUuid = actionsMapping[actionName].Uuid;
-                        _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, ActionUuid = actionUuid, IsAllowed = true });
+                        foreach (var actionName in resourcePermissions.Actions)
+                        {
+                            var actionUuid = actionsMapping[actionName].Uuid;
+                            _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, ActionUuid = actionUuid, IsAllowed = true });
+                        }
                     }
-                }
 
-                if(resourcePermissions.Objects != null)
-                {
-                    _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
-                    foreach (var objectPermissions in resourcePermissions.Objects)
+                    if (resourcePermissions.Objects != null)
                     {
-                        AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
+                        _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
+                        var resourceActions = resourcePermissions.AllowAllActions ? null : (resourcePermissions.Actions ?? new List<string>());
+                        foreach (var objectPermissions in resourcePermissions.Objects)
+                        {
+                            AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourceActions, actionsMapping);
+                        }
                     }
                 }
             }
@@ -143,7 +144,7 @@ namespace Czertainly.Auth.Services
 
         private void AddRoleResourceObjectPermissions(Guid roleUuid, Guid resourceUuid, ObjectPermissionsRequestDto objectPermissions, List<string>? resourceActions, Dictionary<string, Models.Entities.Action> actionsMapping)
         {
-            var allowActions = resourceActions == null ? Enumerable.Empty<string>() : objectPermissions.Allow.Where(a => !resourceActions.Contains(a));
+            var allowActions = resourceActions == null || objectPermissions.Allow == null ? Enumerable.Empty<string>() : objectPermissions.Allow.Where(a => !resourceActions.Contains(a));
             foreach (var allowAction in allowActions)
             {
                 var actionUuid = actionsMapping[allowAction].Uuid;
@@ -156,17 +157,21 @@ namespace Czertainly.Auth.Services
                     IsAllowed = true
                 });
             }
-            foreach (var denyAction in objectPermissions.Deny)
+
+            if (objectPermissions.Deny != null)
             {
-                var actionUuid = actionsMapping[denyAction].Uuid;
-                _repository.Create(new Permission
+                foreach (var denyAction in objectPermissions.Deny)
                 {
-                    RoleUuid = roleUuid,
-                    ResourceUuid = resourceUuid,
-                    ActionUuid = actionUuid,
-                    ObjectUuid = objectPermissions.Uuid,
-                    IsAllowed = false
-                });
+                    var actionUuid = actionsMapping[denyAction].Uuid;
+                    _repository.Create(new Permission
+                    {
+                        RoleUuid = roleUuid,
+                        ResourceUuid = resourceUuid,
+                        ActionUuid = actionUuid,
+                        ObjectUuid = objectPermissions.Uuid,
+                        IsAllowed = false
+                    });
+                }
             }
         }
 

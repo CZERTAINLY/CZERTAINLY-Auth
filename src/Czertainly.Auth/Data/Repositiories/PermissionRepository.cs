@@ -19,17 +19,17 @@ namespace Czertainly.Auth.Data.Repositiories
 
         public async Task<List<Permission>> GetRolePermissions(Guid roleUuid)
         {
-            return await _dbSet.IgnoreAutoIncludes().Include(p => p.Resource).Include(p => p.Action).Include(p => p.Role).Where(p => p.Role.Uuid == roleUuid).OrderByDescending(p => p.ResourceUuid).ThenByDescending(p => p.ActionUuid).ThenByDescending(p => p.ObjectUuid).ToListAsync();
+            return await _dbSet.IgnoreAutoIncludes().Include(p => p.Resource).Include(p => p.Action).Where(p => p.RoleUuid == roleUuid).OrderByDescending(p => p.ResourceUuid).ThenByDescending(p => p.ActionUuid).ThenByDescending(p => p.ObjectUuid).ToListAsync();
         }
 
         public async Task<List<Permission>> GetRoleResourcePermissions(Guid roleUuid, Guid resourceUuid)
         {
-            return await _dbSet.IgnoreAutoIncludes().Include(p => p.Resource).Include(p => p.Action).Include(p => p.Role).Where(p => p.Role.Uuid == roleUuid && (p.Resource == null || p.Resource.Uuid == resourceUuid)).OrderByDescending(p => p.ResourceUuid).ThenByDescending(p => p.ActionUuid).ThenByDescending(p => p.ObjectUuid).ToListAsync();
+            return await _dbSet.IgnoreAutoIncludes().Include(p => p.Resource).Include(p => p.Action).Where(p => p.RoleUuid == roleUuid && p.ResourceUuid == resourceUuid).OrderByDescending(p => p.ResourceUuid).ThenByDescending(p => p.ActionUuid).ThenByDescending(p => p.ObjectUuid).ToListAsync();
         }
 
         public async Task<List<Permission>> GetRoleResourceObjectsPermissions(Guid roleUuid, Guid resourceUuid)
         {
-            return await _dbSet.IgnoreAutoIncludes().Include(p => p.Resource).Include(p => p.Action).Include(p => p.Role).Where(p => p.ObjectUuid != null && p.Role.Uuid == roleUuid && (p.Resource == null || p.Resource.Uuid == resourceUuid)).OrderByDescending(p => p.ResourceUuid).ThenByDescending(p => p.ActionUuid).ThenByDescending(p => p.ObjectUuid).ToListAsync();
+            return await _dbSet.IgnoreAutoIncludes().Where(p => p.ObjectUuid != null && p.RoleUuid == roleUuid && p.ResourceUuid == resourceUuid).OrderByDescending(p => p.ResourceUuid).ThenByDescending(p => p.ActionUuid).ThenByDescending(p => p.ObjectUuid).ToListAsync();
         }
 
         public void DeleteRolePermissionsWithoutObjects(Guid roleUuid)

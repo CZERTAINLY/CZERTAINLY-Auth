@@ -21,11 +21,4 @@ public class Resource : BaseEntity
     public string? ListingEndpoint { get; set; }
 
     public ICollection<Action> Actions { get; set; }
-
-    //public ICollection<Permission> Permissions { get; set; }
-
-    public Resource()
-    {
-        Actions = new List<Action>();
-    }
 }

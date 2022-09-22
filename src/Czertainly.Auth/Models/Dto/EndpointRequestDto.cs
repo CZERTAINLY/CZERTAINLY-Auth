@@ -6,19 +6,19 @@ namespace Czertainly.Auth.Models.Dto
     public record EndpointRequestDto : ICrudRequestDto
     {
         [Required]
-        public string? Name { get; init; }
+        public string Name { get; init; }
 
         [Required]
-        public string? Method { get; init; }
+        public string Method { get; init; }
 
         [Required]
-        public string? RouteTemplate { get; init; }
+        public string RouteTemplate { get; init; }
 
         [Required]
-        public string? ResourceName { get; init; }
+        public string ResourceName { get; init; }
 
         [Required]
-        public string? ActionName { get; init; }
+        public string ActionName { get; init; }
 
         public bool IsListingEndpoint { get; init; } = false;
     }
