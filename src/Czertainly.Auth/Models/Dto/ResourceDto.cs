@@ -13,10 +13,9 @@ namespace Czertainly.Auth.Models.Dto
         public string DisplayName { get; init; }
 
         [Required]
-        public bool ObjectAccess { get { return !string.IsNullOrEmpty(ListingEndpoint); } }
+        public bool ObjectAccess { get { return !string.IsNullOrEmpty(ListObjectsEndpoint); } }
 
-        [JsonPropertyName("listObjectsEndpoint")]
-        public string? ListingEndpoint { get; init; }
+        public string? ListObjectsEndpoint { get; init; }
 
     }
 }

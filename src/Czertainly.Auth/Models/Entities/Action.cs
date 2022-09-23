@@ -19,5 +19,5 @@ public class Action : BaseEntity
 
     public ICollection<Resource> Resources { get; set; }
 
-    //public ICollection<Permission> Permissions { get; set; }
+    public ICollection<Permission> Permissions { get; set; }
 }

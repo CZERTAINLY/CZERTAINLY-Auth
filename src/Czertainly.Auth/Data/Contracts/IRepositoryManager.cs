@@ -7,7 +7,6 @@ namespace Czertainly.Auth.Data.Contracts
         IUserRepository User { get; }
         IRoleRepository Role { get; }
         IPermissionRepository Permission { get; }
-        IEndpointRepository Endpoint { get; }
         IResourceRepository Resource { get; }
         IActionRepository Action { get; }
 

@@ -10,7 +10,6 @@ namespace Czertainly.Auth.Data.Repositiories
         private IUserRepository _user;
         private IRoleRepository _role;
         private IPermissionRepository _permission;
-        private IEndpointRepository _endpoint;
         private IResourceRepository _resource;
         private IActionRepository _action;
 
@@ -47,18 +46,6 @@ namespace Czertainly.Auth.Data.Repositiories
                     _permission = new PermissionRepository(_dbContext);
                 }
                 return _permission;
-            }
-        }
-
-        public IEndpointRepository Endpoint
-        {
-            get
-            {
-                if (_endpoint == null)
-                {
-                    _endpoint = new EndpointRepository(_dbContext);
-                }
-                return _endpoint;
             }
         }
 

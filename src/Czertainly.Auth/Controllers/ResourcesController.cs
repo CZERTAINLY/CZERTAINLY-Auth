@@ -25,5 +25,13 @@ namespace Czertainly.Auth.Controllers
 
             return Ok(result);
         }
+
+        [HttpPost("sync")]
+        public async Task<ActionResult<SyncResourcesResponseDto>> SyncResourcesAsync([FromBody] List<ResourceSyncRequestDto> resources)
+        {
+            var result = await _resourceService.SyncResourcesAsync(resources);
+
+            return Ok(result);
+        }
     }
 }

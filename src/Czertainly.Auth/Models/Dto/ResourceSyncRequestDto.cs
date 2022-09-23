@@ -3,14 +3,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record ResourceRequestDto : ICrudRequestDto
+    public record ResourceSyncRequestDto : ICrudRequestDto
     {
         [Required]
-        public string? Name { get; init; }
-
-        public string? DisplayName { get; init; }
+        public string Name { get; init; }
 
         public string? ListObjectsEndpoint { get; init; }
 
+        [Required]
+        public List<string> Actions { get; init; } = new List<string>();
     }
 }
