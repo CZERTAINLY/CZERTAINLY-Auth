@@ -14,12 +14,12 @@ namespace Czertainly.Auth.Data.Repositiories
 
         public async Task<List<Resource>> GetResourcesWithActions()
         {
-            return await _dbSet.Include(r => r.Actions).ToListAsync();
+            return await _dbSet.Include(r => r.Actions).OrderBy(r => r.DisplayName).ToListAsync();
         }
 
-        public async Task<Dictionary<TKey, Resource>> GetResourcesMap<TKey>(Func<Resource, TKey> keySelector) where TKey : notnull
+        public async Task<Dictionary<TKey, Resource>> GetResourcesMapAsync<TKey>(Func<Resource, TKey> keySelector) where TKey : notnull
         {
-            return await _dbSet.Include(r => r.Actions).AsTracking().ToDictionaryAsync(keySelector);
+            return await _dbSet.Include(r => r.Actions).Include(r => r.Permissions).AsTracking().ToDictionaryAsync(keySelector);
         }
     }
 }

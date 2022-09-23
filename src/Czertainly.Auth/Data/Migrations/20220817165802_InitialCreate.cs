@@ -34,7 +34,7 @@ namespace Czertainly.Auth.Data.Migrations
                     uuid = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     display_name = table.Column<string>(type: "text", nullable: false),
-                    listing_endpoint = table.Column<string>(type: "text", nullable: true)
+                    list_objects_endpoint = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -74,36 +74,6 @@ namespace Czertainly.Auth.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_user", x => x.uuid);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "endpoint",
-                schema: "auth",
-                columns: table => new
-                {
-                    uuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "text", nullable: false),
-                    method = table.Column<string>(type: "text", nullable: false),
-                    route_template = table.Column<string>(type: "text", nullable: false),
-                    resource_uuid = table.Column<Guid>(type: "uuid", nullable: false),
-                    action_uuid = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_endpoint", x => x.uuid);
-                    table.ForeignKey(
-                        name: "FK_endpoint_action_action_uuid",
-                        column: x => x.action_uuid,
-                        principalSchema: "auth",
-                        principalTable: "action",
-                        principalColumn: "uuid");
-                    table.ForeignKey(
-                        name: "FK_endpoint_resource_resource_uuid",
-                        column: x => x.resource_uuid,
-                        principalSchema: "auth",
-                        principalTable: "resource",
-                        principalColumn: "uuid",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -240,18 +210,6 @@ namespace Czertainly.Auth.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_endpoint_action_uuid",
-                schema: "auth",
-                table: "endpoint",
-                column: "action_uuid");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_endpoint_resource_uuid",
-                schema: "auth",
-                table: "endpoint",
-                column: "resource_uuid");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_permission_action_uuid",
                 schema: "auth",
                 table: "permission",
@@ -305,10 +263,6 @@ namespace Czertainly.Auth.Data.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "endpoint",
-                schema: "auth");
-
             migrationBuilder.DropTable(
                 name: "permission",
                 schema: "auth");

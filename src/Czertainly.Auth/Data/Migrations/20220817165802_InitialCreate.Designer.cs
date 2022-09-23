@@ -51,46 +51,6 @@ namespace Czertainly.Auth.Data.Migrations
                     b.ToTable("action", "auth");
                 });
 
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Endpoint", b =>
-                {
-                    b.Property<Guid>("Uuid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("uuid")
-                        .HasColumnOrder(0);
-
-                    b.Property<Guid?>("ActionUuid")
-                        .HasColumnType("uuid")
-                        .HasColumnName("action_uuid");
-
-                    b.Property<string>("Method")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("method");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("ResourceUuid")
-                        .HasColumnType("uuid")
-                        .HasColumnName("resource_uuid");
-
-                    b.Property<string>("RouteTemplate")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("route_template");
-
-                    b.HasKey("Uuid");
-
-                    b.HasIndex("ActionUuid");
-
-                    b.HasIndex("ResourceUuid");
-
-                    b.ToTable("endpoint", "auth");
-                });
-
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Permission", b =>
                 {
                     b.Property<Guid>("Uuid")
@@ -151,9 +111,9 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("display_name");
 
-                    b.Property<string>("ListingEndpoint")
+                    b.Property<string>("ListObjectsEndpoint")
                         .HasColumnType("text")
-                        .HasColumnName("listing_endpoint");
+                        .HasColumnName("list_objects_endpoint");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -321,32 +281,17 @@ namespace Czertainly.Auth.Data.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Endpoint", b =>
-                {
-                    b.HasOne("Czertainly.Auth.Models.Entities.Action", "Action")
-                        .WithMany()
-                        .HasForeignKey("ActionUuid");
-
-                    b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
-                        .WithMany()
-                        .HasForeignKey("ResourceUuid")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Action");
-
-                    b.Navigation("Resource");
-                });
-
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Permission", b =>
                 {
                     b.HasOne("Czertainly.Auth.Models.Entities.Action", "Action")
-                        .WithMany()
-                        .HasForeignKey("ActionUuid");
+                        .WithMany("Permissions")
+                        .HasForeignKey("ActionUuid")
+                        .OnDelete(DeleteBehavior.ClientCascade);
 
                     b.HasOne("Czertainly.Auth.Models.Entities.Resource", "Resource")
-                        .WithMany()
-                        .HasForeignKey("ResourceUuid");
+                        .WithMany("Permissions")
+                        .HasForeignKey("ResourceUuid")
+                        .OnDelete(DeleteBehavior.ClientCascade);
 
                     b.HasOne("Czertainly.Auth.Models.Entities.Role", "Role")
                         .WithMany("Permissions")
@@ -389,6 +334,16 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasForeignKey("user_uuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Action", b =>
+                {
+                    b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("Czertainly.Auth.Models.Entities.Resource", b =>
+                {
+                    b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("Czertainly.Auth.Models.Entities.Role", b =>

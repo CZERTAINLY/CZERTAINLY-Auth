@@ -17,8 +17,9 @@ public class Resource : BaseEntity
     [Column("display_name")]
     public string DisplayName { get; set; }
 
-    [Column("listing_endpoint")]
-    public string? ListingEndpoint { get; set; }
+    [Column("list_objects_endpoint")]
+    public string? ListObjectsEndpoint { get; set; }
 
     public ICollection<Action> Actions { get; set; }
+    public ICollection<Permission> Permissions { get; set; }
 }

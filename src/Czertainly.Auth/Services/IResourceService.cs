@@ -7,5 +7,8 @@ namespace Czertainly.Auth.Services
     public interface IResourceService : ICrudService<ResourceDto, ResourceDetailDto>
     {
         Task<List<ResourceDetailDto>> GetAllResourcesAsync();
+
+        Task<SyncResourcesResponseDto> SyncResourcesAsync(List<ResourceSyncRequestDto> resources);
+
     }
 }

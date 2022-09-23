@@ -14,7 +14,9 @@ namespace Czertainly.Auth.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
-        public DbSet<Models.Entities.Endpoint> Endpoints { get; set; }
+        public DbSet<Resource> Resources { get; set; }
+        public DbSet<Models.Entities.Action> Actions { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

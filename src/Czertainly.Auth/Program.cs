@@ -58,7 +58,6 @@ try
     builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IRoleService, RoleService>();
-    builder.Services.AddScoped<IEndpointService, EndpointService>();
     builder.Services.AddScoped<IPermissionService, PermissionService>();
     builder.Services.AddScoped<IResourceService, ResourceService>();
     builder.Services.AddScoped<IActionService, ActionService>();
