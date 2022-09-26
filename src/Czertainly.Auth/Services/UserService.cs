@@ -8,16 +8,20 @@ using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Json;
 using System.Web;
 
 namespace Czertainly.Auth.Services
 {
     public class UserService : CrudService<User, UserDto, UserDetailDto>, IUserService
     {
+        private readonly IRoleService _roleService;
         private readonly IPermissionService _permissionService;
 
-        public UserService(IRepositoryManager repositoryManager, IMapper mapper, IPermissionService permissionService): base(repositoryManager, repositoryManager.User, mapper)
+        public UserService(IRepositoryManager repositoryManager, IMapper mapper, IRoleService roleService, IPermissionService permissionService) : base(repositoryManager, repositoryManager.User, mapper)
         {
+            _roleService = roleService;
             _permissionService = permissionService;
         }
 
@@ -37,9 +41,9 @@ namespace Czertainly.Auth.Services
             await base.DeleteAsync(key);
         }
 
-        public async Task<AuthenticationResponseDto> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
+        public async Task<AuthenticationResponseDto?> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
         {
-            if(string.IsNullOrEmpty(authenticationRequestDto.CertificateContent) && string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken)) throw new UnauthorizedAccessException();
+            if(string.IsNullOrEmpty(authenticationRequestDto.CertificateContent) && string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken)) return null;
 
             User? user = null;
             if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
@@ -51,12 +55,42 @@ namespace Czertainly.Auth.Services
 
                 user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
             }
-            else
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
             {
                 // Authentication token processing
-            }
+                var decodedToken = Convert.FromBase64String(authenticationRequestDto.AuthenticationToken);
+                var decodedTokenString = Encoding.UTF8.GetString(decodedToken);
 
-            if (user == null) return new AuthenticationResponseDto { Authenticated = false };
+                var authenticationToken = JsonSerializer.Deserialize<AuthenticationTokenDto>(decodedToken);
+                if (authenticationToken == null) return null;
+
+                user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
+
+                var transaction = await _repositoryManager.BeginTransactionAsync();
+
+                try
+                {
+                    if (user == null)
+                    {
+                        user = _mapper.Map<User>(authenticationToken);
+                        _repository.Create(user);
+                        await _repositoryManager.SaveAsync();
+                    }
+
+                    var role = await _repositoryManager.Role.GetByConditionAsync(r => r.Name == authenticationToken.Roles);
+                    await AssignRolesAsync(user.Uuid, role != null ? new[] { role.Uuid } : Array.Empty<Guid>());
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    return null;
+                }
+
+                await transaction.CommitAsync();
+            }
+            else return new AuthenticationResponseDto { Authenticated = false };
+
+            if (user == null) return null;
 
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Uuid);
 
@@ -142,5 +176,6 @@ namespace Czertainly.Auth.Services
             verify.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
             return verify.Build(certificate);
         }
+
     }
 }

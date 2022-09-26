@@ -19,9 +19,10 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpGet("authenticate")]
-        public async Task<ActionResult<AuthenticationResponseDto>> GetUserProfile([FromBody] AuthenticationRequestDto authenticationRequestDto)
+        public async Task<ActionResult<AuthenticationResponseDto>> AuthenticateUserAsync([FromBody] AuthenticationRequestDto authenticationRequestDto)
         {
             var result = await _userService.AuthenticateUserAsync(authenticationRequestDto);
+            if (result == null) return Unauthorized();
 
             return Ok(result);
         }
