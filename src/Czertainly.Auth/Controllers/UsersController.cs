@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Czertainly.Auth.Controllers
 {
     [ApiVersion("1.0")]
-    [Route("auth/users")]
+    [Route("auth")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -18,7 +18,7 @@ namespace Czertainly.Auth.Controllers
             _userService = userService;
         }
 
-        [HttpGet("authenticate")]
+        [HttpPost("")]
         public async Task<ActionResult<AuthenticationResponseDto>> AuthenticateUserAsync([FromBody] AuthenticationRequestDto authenticationRequestDto)
         {
             var result = await _userService.AuthenticateUserAsync(authenticationRequestDto);
@@ -27,7 +27,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("users")]
         public async Task<ActionResult<PagedResponse<UserDto>>> GetUsersAsync()
         {
             var result = await _userService.GetAsync(new QueryRequestDto());
@@ -35,7 +35,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("users")]
         [ServiceFilter(typeof(ValidationFilter))]
         public async Task<ActionResult<UserDetailDto>> CreateUserAsync([FromBody] UserRequestDto userRequestDto)
         {
@@ -44,7 +44,7 @@ namespace Czertainly.Auth.Controllers
             return Created("auth/users", result);
         }
 
-        [HttpGet("{userUuid}")]
+        [HttpGet("users/{userUuid}")]
         public async Task<ActionResult<UserDetailDto>> GetUserAsync([FromRoute] Guid userUuid)
         {
             var result = await _userService.GetDetailAsync(userUuid);
@@ -52,7 +52,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{userUuid}")]
+        [HttpPut("users/{userUuid}")]
         [ServiceFilter(typeof(ValidationFilter))]
         public async Task<ActionResult<UserDetailDto>> UpdateUserAsync([FromRoute] Guid userUuid, [FromBody] UserUpdateRequestDto userRequestDto)
         {
@@ -61,7 +61,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{userUuid}")]
+        [HttpDelete("users/{userUuid}")]
         public async Task<ActionResult> DeleteUserAsync([FromRoute] Guid userUuid)
         {
             await _userService.DeleteAsync(userUuid);
@@ -69,7 +69,7 @@ namespace Czertainly.Auth.Controllers
             return NoContent();
         }
 
-        [HttpPatch("{userUuid}/enable")]
+        [HttpPatch("users/{userUuid}/enable")]
         public async Task<ActionResult<UserDetailDto>> EnableUserAsync([FromRoute] Guid userUuid)
         {
             var result = await _userService.EnableUserAsync(userUuid, true);
@@ -77,7 +77,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("{userUuid}/disable")]
+        [HttpPatch("users/{userUuid}/disable")]
         public async Task<ActionResult<UserDetailDto>> DisableUserAsync([FromRoute] Guid userUuid)
         {
             var result = await _userService.EnableUserAsync(userUuid, false);
@@ -85,7 +85,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{userUuid}/roles")]
+        [HttpGet("users/{userUuid}/roles")]
         public async Task<ActionResult<List<RoleDto>>> GetUserRolesAsync([FromServices] IRoleService roleService, [FromRoute] Guid userUuid)
         {
             var result = await roleService.GetUserRolesAsync(userUuid);
@@ -93,7 +93,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpPatch("{userUuid}/roles")]
+        [HttpPatch("users/{userUuid}/roles")]
         public async Task<ActionResult<UserDetailDto>> AssignRolesAsync([FromRoute] Guid userUuid, [FromBody] IEnumerable<Guid> roleUuids)
         {
             var result = await _userService.AssignRolesAsync(userUuid, roleUuids);
@@ -101,7 +101,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpPut("{userUuid}/roles/{roleUuid}")]
+        [HttpPut("users/{userUuid}/roles/{roleUuid}")]
         public async Task<ActionResult<UserDetailDto>> AssignRoleAsync([FromRoute] Guid userUuid, [FromRoute] Guid roleUuid)
         {
             var result = await _userService.AssignRoleAsync(userUuid, roleUuid);
@@ -109,7 +109,7 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
-        [HttpDelete("{userUuid}/roles/{roleUuid}")]
+        [HttpDelete("users/{userUuid}/roles/{roleUuid}")]
         public async Task<ActionResult<UserDetailDto>> RemoveRoleAsync([FromRoute] Guid userUuid, [FromRoute] Guid roleUuid)
         {
             var result = await _userService.RemoveRoleAsync(userUuid, roleUuid);
