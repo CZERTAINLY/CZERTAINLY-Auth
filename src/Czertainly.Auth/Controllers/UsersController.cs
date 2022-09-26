@@ -18,10 +18,10 @@ namespace Czertainly.Auth.Controllers
             _userService = userService;
         }
 
-        [HttpGet("profile")]
-        public async Task<ActionResult<AuthenticationResponseDto>> GetUserProfile([FromHeader(Name = "x-app-certificate")] string certificate)
+        [HttpGet("authenticate")]
+        public async Task<ActionResult<AuthenticationResponseDto>> GetUserProfile([FromBody] AuthenticationRequestDto authenticationRequestDto)
         {
-            var result = await _userService.AuthenticateUserAsync(certificate);
+            var result = await _userService.AuthenticateUserAsync(authenticationRequestDto);
 
             return Ok(result);
         }

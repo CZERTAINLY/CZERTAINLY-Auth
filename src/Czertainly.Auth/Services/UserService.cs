@@ -37,13 +37,25 @@ namespace Czertainly.Auth.Services
             await base.DeleteAsync(key);
         }
 
-        public async Task<AuthenticationResponseDto> AuthenticateUserAsync(string certificate)
+        public async Task<AuthenticationResponseDto> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
         {
-            var clientCertificate = ParseCertificate(certificate);
-            var isCertValid = VerifyClientCertificate(clientCertificate);
-            var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
+            if(string.IsNullOrEmpty(authenticationRequestDto.CertificateContent) && string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken)) throw new UnauthorizedAccessException();
 
-            var user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
+            User? user = null;
+            if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
+            {
+
+                var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
+                var isCertValid = VerifyClientCertificate(clientCertificate);
+                var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
+
+                user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
+            }
+            else
+            {
+                // Authentication token processing
+            }
+
             if (user == null) return new AuthenticationResponseDto { Authenticated = false };
 
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Uuid);

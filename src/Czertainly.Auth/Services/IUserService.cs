@@ -7,7 +7,7 @@ namespace Czertainly.Auth.Services
 {
     public interface IUserService : ICrudService<UserDto, UserDetailDto>
     {
-        Task<AuthenticationResponseDto> AuthenticateUserAsync(string certificate);
+        Task<AuthenticationResponseDto> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto);
 
         Task<UserDetailDto> EnableUserAsync(Guid userUuid, bool enableFlag);
 
