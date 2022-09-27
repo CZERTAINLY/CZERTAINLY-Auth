@@ -9,6 +9,7 @@ using Czertainly.Auth.Common.Filters;
 using NLog.Web;
 using NLog;
 using Czertainly.Auth.Common.Exceptions;
+using Czertainly.Auth.Models.Config;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -52,6 +53,9 @@ try
             pgsqlOpts.MigrationsHistoryTable("_migrations_history", "auth");
         });
     });
+
+    // add configurations
+    builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.Section));
 
     // add app services
     builder.Services.AddScoped<ValidationFilter>();

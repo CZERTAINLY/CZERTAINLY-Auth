@@ -4,20 +4,29 @@ using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
+using Czertainly.Auth.Models.Config;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Json;
 using System.Web;
 
 namespace Czertainly.Auth.Services
 {
     public class UserService : CrudService<User, UserDto, UserDetailDto>, IUserService
     {
+        private AuthOptions _authOptions;
+        private readonly IRoleService _roleService;
         private readonly IPermissionService _permissionService;
 
-        public UserService(IRepositoryManager repositoryManager, IMapper mapper, IPermissionService permissionService): base(repositoryManager, repositoryManager.User, mapper)
+        public UserService(IRepositoryManager repositoryManager, IMapper mapper, IOptions<AuthOptions> authOptions, IRoleService roleService, IPermissionService permissionService) : base(repositoryManager, repositoryManager.User, mapper)
         {
+            _authOptions = authOptions.Value;
+
+            _roleService = roleService;
             _permissionService = permissionService;
         }
 
@@ -37,14 +46,66 @@ namespace Czertainly.Auth.Services
             await base.DeleteAsync(key);
         }
 
-        public async Task<AuthenticationResponseDto> AuthenticateUserAsync(string certificate)
+        public async Task<AuthenticationResponseDto?> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
         {
-            var clientCertificate = ParseCertificate(certificate);
-            var isCertValid = VerifyClientCertificate(clientCertificate);
-            var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
+            if(string.IsNullOrEmpty(authenticationRequestDto.CertificateContent) && string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken)) return null;
 
-            var user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
-            if (user == null) return new AuthenticationResponseDto { Authenticated = false };
+            User? user = null;
+            if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
+            {
+
+                var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
+                var isCertValid = VerifyClientCertificate(clientCertificate);
+                var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
+
+                user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
+            }
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
+            {
+                // Authentication token processing
+                var decodedToken = Convert.FromBase64String(authenticationRequestDto.AuthenticationToken);
+                var decodedTokenString = Encoding.UTF8.GetString(decodedToken);
+
+                var authenticationToken = JsonSerializer.Deserialize<AuthenticationTokenDto>(decodedToken);
+                if (authenticationToken == null) return null;
+
+                user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
+                if (user == null && !_authOptions.CreateUnknownUsers) return null;
+
+                var transaction = await _repositoryManager.BeginTransactionAsync();
+
+                try
+                {
+                    if (user == null)
+                    {
+                        user = _mapper.Map<User>(authenticationToken);
+                        _repository.Create(user);
+                        await _repositoryManager.SaveAsync();
+                    }
+
+                    Guid? roleUuid = null;
+                    var role = await _repositoryManager.Role.GetByConditionAsync(r => r.Name == authenticationToken.Roles);
+
+                    if (role != null) roleUuid = role.Uuid;
+                    else if (_authOptions.CreateUnknownRoles)
+                    {
+                        var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = authenticationToken.Roles });
+                        roleUuid = roleDto.Uuid;
+                    }
+
+                    await AssignRolesAsync(user.Uuid, roleUuid.HasValue ? new[] { roleUuid.Value } : Array.Empty<Guid>());
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    return null;
+                }
+
+                await transaction.CommitAsync();
+            }
+            else return new AuthenticationResponseDto { Authenticated = false };
+
+            if (user == null) return null;
 
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Uuid);
 
@@ -130,5 +191,6 @@ namespace Czertainly.Auth.Services
             verify.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
             return verify.Build(certificate);
         }
+
     }
 }
