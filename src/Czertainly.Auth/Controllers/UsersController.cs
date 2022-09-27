@@ -13,13 +13,12 @@ namespace Czertainly.Auth.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private AuthOptions _authOptions;
         private readonly IUserService _userService;
 
-        public UsersController(IOptions<AuthOptions> authOptions, IUserService userService)
+        public UsersController(IUserService userService)
         {
             _userService = userService;
-            _authOptions = authOptions.Value;
+            
         }
 
         [HttpPost("")]
