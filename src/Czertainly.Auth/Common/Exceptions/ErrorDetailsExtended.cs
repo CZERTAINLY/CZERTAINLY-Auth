@@ -4,18 +4,27 @@ namespace Czertainly.Auth.Common.Exceptions
 {
     public class ErrorDetailsExtended : ErrorDetails
     {
-        public string Url { get; init; }
-        public string Service { get; init; }
-        public string Exception { get; private set; }
-        public string? InnerException { get; private set; }
-        public string[] StackTrace { get; private set; }
+        public string Url { get; private set; }
+        public string Service { get; private set; }
+        public string[] Exception { get; private set; }
+        public string[]? InnerException { get; private set; }
 
-        public ErrorDetailsExtended(Exception exception)
+        public ErrorDetailsExtended(string url, string service, Exception exception)
+            : base(exception)
         {
-            Exception = exception.Message;
-            InnerException = exception.InnerException?.Message;
-            //StackTrace = exception.StackTrace.Substring(6, exception.StackTrace.IndexOf("\r\n") - 6);
-            StackTrace = exception.StackTrace.Substring(6).Split("\r\n   at ");
+            Url = url;
+            Service = service;
+
+            var exceptionList = new List<string>() { exception.Message };
+            if (exception.StackTrace != null) exceptionList.AddRange(exception.StackTrace[6..].Split("\r\n   at "));
+            Exception = exceptionList.ToArray();
+
+            if(exception.InnerException != null)
+            {
+                var innerExceptionList = new List<string>() { exception.InnerException.Message };
+                if (exception.InnerException.StackTrace != null) exceptionList.AddRange(exception.InnerException.StackTrace[6..].Split("\r\n   at "));
+                InnerException = innerExceptionList.ToArray();
+            }
         }
 
         public override string ToString()

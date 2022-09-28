@@ -1,10 +1,17 @@
-﻿namespace Czertainly.Auth.Common.Exceptions
+﻿using System.Net;
+
+namespace Czertainly.Auth.Common.Exceptions
 {
     public class RequestException : Exception
     {
-        public RequestException(string message)
-            : base(message)
+        public HttpStatusCode StatusCode { get; private set; }
+        public string Code { get; private set; }
+
+        public RequestException(HttpStatusCode statusCode, string code, string message, Exception? innerException = null)
+            :base(message, innerException)
         {
+            StatusCode = statusCode;
+            Code = code;
         }
     }
 }

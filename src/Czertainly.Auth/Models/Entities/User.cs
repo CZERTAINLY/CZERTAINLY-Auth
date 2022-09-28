@@ -36,6 +36,6 @@ public class User : BaseEntity
     [Column("certificate_fingerprint")]
     public string? CertificateFingerprint { get; set; }
 
-    public ICollection<Role> Roles { get; set; }
+    public ICollection<Role> Roles { get; set; } = null!;
 
 }
