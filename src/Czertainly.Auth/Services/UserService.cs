@@ -33,7 +33,7 @@ namespace Czertainly.Auth.Services
         public override async Task<UserDetailDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
             var user = await _repository.GetByKeyAsync(key);
-            if (user.SystemUser) throw new Exception("Cannot update system user!");
+            if (user.SystemUser) throw new InvalidActionException("Cannot update system user.");
 
             return await base.UpdateAsync(key, dto);
         }
@@ -41,15 +41,13 @@ namespace Czertainly.Auth.Services
         public override async Task DeleteAsync(Guid key)
         {
             var user = await _repository.GetByKeyAsync(key);
-            if (user.SystemUser) throw new Exception("Cannot update system user!");
+            if (user.SystemUser) throw new InvalidActionException("Cannot delete system user.");
 
             await base.DeleteAsync(key);
         }
 
-        public async Task<AuthenticationResponseDto?> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
+        public async Task<AuthenticationResponseDto> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
         {
-            if(string.IsNullOrEmpty(authenticationRequestDto.CertificateContent) && string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken)) return null;
-
             User? user = null;
             if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
             {
@@ -59,18 +57,28 @@ namespace Czertainly.Auth.Services
                 var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
 
                 user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
+
+                if (user == null) throw new UnauthorizedException("Unknown user for specified client certificate.");
             }
             else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
             {
                 // Authentication token processing
-                var decodedToken = Convert.FromBase64String(authenticationRequestDto.AuthenticationToken);
-                var decodedTokenString = Encoding.UTF8.GetString(decodedToken);
+                AuthenticationTokenDto? authenticationToken = null;
+                try
+                {
+                    var decodedToken = Convert.FromBase64String(authenticationRequestDto.AuthenticationToken);
+                    var decodedTokenString = Encoding.UTF8.GetString(decodedToken);
+                    authenticationToken = JsonSerializer.Deserialize<AuthenticationTokenDto>(decodedToken);
+                }
+                catch (Exception ex)
+                {
+                    throw new UnauthorizedException("Wrong format of authentication token.", ex);
+                }
 
-                var authenticationToken = JsonSerializer.Deserialize<AuthenticationTokenDto>(decodedToken);
-                if (authenticationToken == null) return null;
+                if (authenticationToken == null) throw new UnauthorizedException("Authentication token is empty or invalid JSON.");
 
                 user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
-                if (user == null && !_authOptions.CreateUnknownUsers) return null;
+                if (user == null && !_authOptions.CreateUnknownUsers) throw new UnauthorizedException($"Unknown user with username '{authenticationToken.Username}'.");
 
                 var transaction = await _repositoryManager.BeginTransactionAsync();
 
@@ -92,20 +100,21 @@ namespace Czertainly.Auth.Services
                         var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = authenticationToken.Roles });
                         roleUuid = roleDto.Uuid;
                     }
+                    else throw new UnauthorizedException($"Unknown role '{authenticationToken.Roles}' for user with username '{authenticationToken.Username}'.");
 
                     await AssignRolesAsync(user.Uuid, roleUuid.HasValue ? new[] { roleUuid.Value } : Array.Empty<Guid>());
                 }
-                catch (Exception)
+                catch (UnauthorizedException) { throw; }
+                catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return null;
+                    throw new UnauthorizedException("Error in creating user or assigning roles based on authentication token.", ex);
                 }
 
                 await transaction.CommitAsync();
             }
-            else return new AuthenticationResponseDto { Authenticated = false };
 
-            if (user == null) return null;
+            if (user == null) return new AuthenticationResponseDto { Authenticated = false };
 
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Uuid);
 
@@ -178,7 +187,7 @@ namespace Czertainly.Auth.Services
             }
             catch (FormatException ex)
             {
-                throw new RequestException("Wrong format of user certificate: " + ex.Message);
+                throw new InvalidFormatException("Wrong format of user authentication certificate.", ex);
             }
         }
 

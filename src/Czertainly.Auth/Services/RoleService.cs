@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
@@ -17,7 +18,7 @@ namespace Czertainly.Auth.Services
         public override async Task<RoleDetailDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
             var role = await _repository.GetByKeyAsync(key);
-            if (role.SystemRole) throw new Exception("Cannot update system role!");
+            if (role.SystemRole) throw new InvalidActionException("Cannot update system role.");
 
             return await base.UpdateAsync(key, dto);
         }
@@ -25,7 +26,7 @@ namespace Czertainly.Auth.Services
         public override async Task DeleteAsync(Guid key)
         {
             var role = await _repository.GetByKeyAsync(key);
-            if (role.SystemRole) throw new Exception("Cannot delete system role!");
+            if (role.SystemRole) throw new InvalidActionException("Cannot delete system role.");
 
             await base.DeleteAsync(key);
         }

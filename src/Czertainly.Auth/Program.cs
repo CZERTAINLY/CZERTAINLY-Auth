@@ -36,7 +36,7 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(swagger =>
     {
-        swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Czertainly Auth Service", Version = "v1" });
+        swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "CZERTAINLY Auth Service", Version = "v1" });
     });
 
     builder.Services.AddApiVersioning(o =>
