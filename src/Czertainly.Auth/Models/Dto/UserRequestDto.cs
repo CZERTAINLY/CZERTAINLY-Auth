@@ -13,7 +13,10 @@ namespace Czertainly.Auth.Models.Dto
         public string? LastName { get; init; }
 
         public bool? Enabled { get; init; }
-        
+
+        public bool? SystemUser { get; init; }
+
+
         [EmailAddress]
         public string? Email { get; init; }
 

@@ -10,5 +10,9 @@ namespace Czertainly.Auth.Models.Dto
 
         public string? Description { get; init; }
 
+        public bool? SystemRole { get; init; }
+
+        public RolePermissionsRequestDto? Permissions { get; init; }
+
     }
 }

@@ -8,7 +8,8 @@ namespace Czertainly.Auth.Models.Mappings
     {
         public RoleProfile()
         {
-            CreateMap<RoleRequestDto, Role>();
+            CreateMap<RoleRequestDto, Role>()
+                .ForMember(x => x.Permissions, opt => opt.Ignore());
             CreateMap<RoleUpdateRequestDto, Role>();
             CreateMap<Role, RoleDto>();
             CreateMap<Role, RoleDetailDto>()

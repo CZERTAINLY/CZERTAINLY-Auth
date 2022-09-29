@@ -10,9 +10,22 @@ namespace Czertainly.Auth.Services
 {
     public class RoleService : CrudService<Role, RoleDto, RoleDetailDto>, IRoleService
     {
+        private readonly IPermissionService _permissionService;
 
-        public RoleService(IRepositoryManager repositoryManager, IMapper mapper): base(repositoryManager, repositoryManager.Role, mapper)
+        public RoleService(IRepositoryManager repositoryManager, IMapper mapper, IPermissionService permissionService) : base(repositoryManager, repositoryManager.Role, mapper)
         {
+            _permissionService = permissionService;
+        }
+
+        public override async Task<RoleDetailDto> CreateAsync(ICrudRequestDto dto)
+        {
+            var roleRequestDto = dto as RoleRequestDto;
+            if(roleRequestDto == null) throw new InvalidActionException("Cannot create role. Invalid DTO");
+
+            var newRole = await base.CreateAsync(dto);
+            if (roleRequestDto.Permissions != null) await _permissionService.SaveRolePermissionsAsync(newRole.Uuid, roleRequestDto.Permissions);
+
+            return newRole;
         }
 
         public override async Task<RoleDetailDto> UpdateAsync(Guid key, ICrudRequestDto dto)

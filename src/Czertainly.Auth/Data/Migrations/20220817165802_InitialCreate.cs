@@ -166,42 +166,6 @@ namespace Czertainly.Auth.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                schema: "auth",
-                table: "role",
-                columns: new[] { "uuid", "description", "name", "system_role" },
-                values: new object[,]
-                {
-                    { new Guid("d34f960b-75c9-4184-ba97-665d30a9ee8a"), "Internal Czertianly system role with all permissions", "Superadmin", true },
-                    { new Guid("da5668e2-9d94-4375-98c4-d665083edceb"), "Internal Czertianly system role with all administrating permissions", "Admin", true }
-                });
-
-            migrationBuilder.InsertData(
-                schema: "auth",
-                table: "user",
-                columns: new[] { "uuid", "certificate_fingerprint", "certificate_uuid", "email", "enabled", "first_name", "last_name", "system_user", "username" },
-                values: new object[,]
-                {
-                    { new Guid("64050556-dce6-42f8-81b6-96e521dd64d7"), null, null, null, true, null, null, true, "admin" },
-                    { new Guid("967679bd-0b75-41eb-8e9e-fef1a5ba4aa6"), "e1481e7eb80a265189da1c42c21066b006ed46afc1b55dd610a31bb8ec5da8b8", null, null, true, null, null, true, "superadmin" }
-                });
-
-            migrationBuilder.InsertData(
-                schema: "auth",
-                table: "permission",
-                columns: new[] { "uuid", "action_uuid", "is_allowed", "object_uuid", "resource_uuid", "role_uuid" },
-                values: new object[] { new Guid("3053b9c9-239d-4717-9d23-97e01177a40b"), null, true, null, null, new Guid("d34f960b-75c9-4184-ba97-665d30a9ee8a") });
-
-            migrationBuilder.InsertData(
-                schema: "auth",
-                table: "user_role",
-                columns: new[] { "role_uuid", "user_uuid" },
-                values: new object[,]
-                {
-                    { new Guid("d34f960b-75c9-4184-ba97-665d30a9ee8a"), new Guid("967679bd-0b75-41eb-8e9e-fef1a5ba4aa6") },
-                    { new Guid("da5668e2-9d94-4375-98c4-d665083edceb"), new Guid("64050556-dce6-42f8-81b6-96e521dd64d7") }
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_action_name",
                 schema: "auth",
