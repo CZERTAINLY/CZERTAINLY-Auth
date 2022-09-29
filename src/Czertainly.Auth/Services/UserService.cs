@@ -8,6 +8,7 @@ using Czertainly.Auth.Models.Config;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -53,7 +54,9 @@ namespace Czertainly.Auth.Services
             {
 
                 var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
-                var isCertValid = VerifyClientCertificate(clientCertificate);
+                var isCertValid = VerifyClientCertificate(clientCertificate, out var chainStatusInfos);
+                if (!isCertValid) throw new UnauthorizedException(string.Join('\n', chainStatusInfos));
+
                 var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
 
                 user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
@@ -191,14 +194,29 @@ namespace Czertainly.Auth.Services
             }
         }
 
-        private bool VerifyClientCertificate(X509Certificate2 certificate)
+        private bool VerifyClientCertificate(X509Certificate2 certificate, out List<string> chainStatusInfos)
         {
-            var verify = new X509Chain();
+            chainStatusInfos = new List<string>();
+
+            var chain = new X509Chain();
+            //chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
             //verify.ChainPolicy.ExtraStore.Add(secureClient.CertificateAuthority); // add CA cert for verification
-            verify.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority; // this accepts too many certificates
-            verify.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck; // no revocation checking
-            verify.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
-            return verify.Build(certificate);
+            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag; // this accepts too many certificates
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck; // no revocation checking
+            chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
+
+            var isValid = chain.Build(certificate);
+            if (!isValid)
+            {
+                foreach (X509ChainElement chainElement in chain.ChainElements)
+                {
+                    foreach (X509ChainStatus chainStatus in chainElement.ChainElementStatus)
+                    {
+                        chainStatusInfos.Add($"{chainElement.Certificate.FriendlyName}: {chainStatus.StatusInformation}");
+                    }
+                }
+            }
+            return isValid;
         }
 
     }

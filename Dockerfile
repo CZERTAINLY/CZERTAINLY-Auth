@@ -18,4 +18,8 @@ RUN dotnet publish "Czertainly.Auth.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Czertainly.Auth.dll"]
+RUN mkdir docker
+COPY ./docker docker
+RUN chmod +x docker/entrypoint.sh
+ENTRYPOINT ["/app/docker/entrypoint.sh", "/run/secrets/trusted-certificates.pem"]
+#ENTRYPOINT ["dotnet", "Czertainly.Auth.dll"]
