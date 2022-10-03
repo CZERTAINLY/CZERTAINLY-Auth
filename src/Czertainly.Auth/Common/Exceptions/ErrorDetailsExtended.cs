@@ -1,12 +1,21 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Czertainly.Auth.Common.Exceptions
 {
     public class ErrorDetailsExtended : ErrorDetails
     {
+
+        [JsonPropertyName("url")]
         public string Url { get; private set; }
+
+        [JsonPropertyName("service")]
         public string Service { get; private set; }
+        
+        [JsonPropertyName("exception")]
         public string[] Exception { get; private set; }
+
+        [JsonPropertyName("innerException")]
         public string[]? InnerException { get; private set; }
 
         public ErrorDetailsExtended(string url, string service, Exception exception)

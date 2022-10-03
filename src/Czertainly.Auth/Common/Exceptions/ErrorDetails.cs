@@ -12,12 +12,15 @@ namespace Czertainly.Auth.Common.Exceptions
     public class ErrorDetails
     {
         [JsonPropertyOrder(-3)]
+        [JsonPropertyName("statusCode")]
         public int StatusCode { get; private set; }
 
         [JsonPropertyOrder(-2)]
+        [JsonPropertyName("code")]
         public string Code { get; private set; }
 
-        [JsonPropertyOrder(-1)] 
+        [JsonPropertyOrder(-1)]
+        [JsonPropertyName("message")]
         public string Message { get; private set; }
 
         public ErrorDetails(Exception exception)
