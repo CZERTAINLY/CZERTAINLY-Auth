@@ -8,6 +8,8 @@ namespace Czertainly.Auth.Models.Dto
         public string? CertificateContent { get; init; }
 
         public string? AuthenticationToken { get; init; }
+        
+        public string? SystemUsername { get; init; }
 
     }
 }

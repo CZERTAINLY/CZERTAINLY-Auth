@@ -113,6 +113,12 @@ namespace Czertainly.Auth.Services
 
                 await transaction.CommitAsync();
             }
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.SystemUsername))
+            {
+                user = await _repository.GetByConditionAsync(u => u.SystemUser && u.Username == authenticationRequestDto.SystemUsername);
+
+                if (user == null) throw new UnauthorizedException("Unknown system user for specified username: " + authenticationRequestDto.SystemUsername);
+            }
 
             if (user == null) return new AuthenticationResponseDto { Authenticated = false };
 
