@@ -16,6 +16,7 @@ FROM build AS publish
 RUN dotnet publish "Czertainly.Auth.csproj" -c Release -o /app/publish
 
 FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Czertainly.Auth.dll"]
+COPY --from=publish /app/publish /opt/czertainly
+COPY ./docker /opt/czertainly
+WORKDIR /opt/czertainly
+ENTRYPOINT ["/opt/czertainly/entry.sh"]

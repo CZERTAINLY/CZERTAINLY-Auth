@@ -8,6 +8,7 @@ using Czertainly.Auth.Models.Config;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -51,9 +52,10 @@ namespace Czertainly.Auth.Services
             User? user = null;
             if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
             {
-
                 var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
-                var isCertValid = VerifyClientCertificate(clientCertificate);
+                var isCertValid = VerifyClientCertificate(clientCertificate, out var chainStatusInfos);
+                if (!isCertValid) throw new UnauthorizedException("User client certificate is invalid.", new Exception(string.Join('\n', chainStatusInfos)));
+
                 var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
 
                 user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
@@ -197,14 +199,27 @@ namespace Czertainly.Auth.Services
             }
         }
 
-        private bool VerifyClientCertificate(X509Certificate2 certificate)
+        private bool VerifyClientCertificate(X509Certificate2 certificate, out List<string> chainStatusInfos)
         {
-            var verify = new X509Chain();
-            //verify.ChainPolicy.ExtraStore.Add(secureClient.CertificateAuthority); // add CA cert for verification
-            verify.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority; // this accepts too many certificates
-            verify.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck; // no revocation checking
-            verify.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
-            return verify.Build(certificate);
+            chainStatusInfos = new List<string>();
+
+            var chain = new X509Chain();
+            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck; // no revocation checking for now
+            chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
+
+            var isValid = chain.Build(certificate);
+            if (!isValid)
+            {
+                foreach (X509ChainElement chainElement in chain.ChainElements)
+                {
+                    foreach (X509ChainStatus chainStatus in chainElement.ChainElementStatus)
+                    {
+                        chainStatusInfos.Add($"Certificate issued by '{chainElement.Certificate.IssuerName.Name}' with subject '{chainElement.Certificate.SubjectName.Name}' is invalid: {chainStatus.StatusInformation}");
+                    }
+                }
+            }
+            return isValid;
         }
 
     }
