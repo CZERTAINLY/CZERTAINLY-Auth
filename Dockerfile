@@ -19,5 +19,5 @@ FROM base AS final
 COPY --from=publish /app/publish /opt/czertainly
 COPY ./docker /opt/czertainly
 WORKDIR /opt/czertainly
-RUN CHMOD +x /opt/czertainly/entry.sh
+RUN chmod +x /opt/czertainly/entry.sh
 ENTRYPOINT ["bash", "-c", "/opt/czertainly/entry.sh"]
