@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-APP_SCRIPTS_HOME="/app/docker"
+APP_SCRIPTS_HOME="/opt/czertainly"
 
 
 if [ -f ${APP_SCRIPTS_HOME}/trusted-certificates.pem ]
