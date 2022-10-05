@@ -19,4 +19,4 @@ FROM base AS final
 COPY --from=publish /app/publish /opt/czertainly
 COPY ./docker /opt/czertainly
 WORKDIR /opt/czertainly
-ENTRYPOINT ["/opt/czertainly/entrypoint.sh"]
+ENTRYPOINT ["/opt/czertainly/entry.sh"]
