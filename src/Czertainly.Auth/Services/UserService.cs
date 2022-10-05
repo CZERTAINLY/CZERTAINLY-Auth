@@ -52,10 +52,9 @@ namespace Czertainly.Auth.Services
             User? user = null;
             if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
             {
-
                 var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
                 var isCertValid = VerifyClientCertificate(clientCertificate, out var chainStatusInfos);
-                if (!isCertValid) throw new UnauthorizedException(string.Join('\n', chainStatusInfos));
+                if (!isCertValid) throw new UnauthorizedException("User client certificate is invalid.", new Exception(string.Join('\n', chainStatusInfos)));
 
                 var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
 
@@ -199,10 +198,8 @@ namespace Czertainly.Auth.Services
             chainStatusInfos = new List<string>();
 
             var chain = new X509Chain();
-            //chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-            //verify.ChainPolicy.ExtraStore.Add(secureClient.CertificateAuthority); // add CA cert for verification
-            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag; // this accepts too many certificates
-            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck; // no revocation checking
+            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck; // no revocation checking for now
             chain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
 
             var isValid = chain.Build(certificate);
@@ -212,7 +209,7 @@ namespace Czertainly.Auth.Services
                 {
                     foreach (X509ChainStatus chainStatus in chainElement.ChainElementStatus)
                     {
-                        chainStatusInfos.Add($"{chainElement.Certificate.FriendlyName}: {chainStatus.StatusInformation}");
+                        chainStatusInfos.Add($"Certificate issued by '{chainElement.Certificate.IssuerName.Name}' with subject '{chainElement.Certificate.SubjectName.Name}' is invalid: {chainStatus.StatusInformation}");
                     }
                 }
             }
