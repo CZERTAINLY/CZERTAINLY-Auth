@@ -6,7 +6,7 @@ namespace Czertainly.Auth.Common.Models.Dto
     {
         public int Page { get; set; } = 1;
 
-        public int PageSize { get; set; } = 10;
+        public int PageSize { get; set; } = 1000;
 
         public string? SortBy { get; set; }
     }

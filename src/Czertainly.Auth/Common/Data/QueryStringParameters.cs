@@ -8,7 +8,7 @@ namespace Czertainly.Auth.Common.Data
 {
     public class QueryStringParameters
     {
-        const int MaxPageSize = 50;
+        const int MaxPageSize = 1000;
 
         private int _pageSize = 10;
 
