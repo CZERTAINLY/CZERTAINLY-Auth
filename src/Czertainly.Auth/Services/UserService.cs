@@ -124,6 +124,8 @@ namespace Czertainly.Auth.Services
 
             if (user == null) return new AuthenticationResponseDto { Authenticated = false };
 
+            if (!user.Enabled) throw new UnauthorizedException($"User '{user.Username}' is disabled");
+
             var permissions = await _permissionService.GetUserPermissionsAsync(user.Uuid);
 
             var result = new AuthenticationResponseDto
