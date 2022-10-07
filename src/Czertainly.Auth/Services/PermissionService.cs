@@ -109,6 +109,7 @@ namespace Czertainly.Auth.Services
 
                     if (resourcePermissions.Objects != null)
                     {
+                        if (string.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
                         _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
                         var resourceActions = resourcePermissions.AllowAllActions ? null : (resourcePermissions.Actions ?? new List<string>());
                         foreach (var objectPermissions in resourcePermissions.Objects)
@@ -128,6 +129,9 @@ namespace Czertainly.Auth.Services
         {
             await CheckRole(roleUuid, true);
 
+            var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
+            if (String.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
+
             _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
 
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
@@ -143,6 +147,9 @@ namespace Czertainly.Auth.Services
         public async Task SaveRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid, ObjectPermissionsRequestDto objectPermissions)
         {
             await CheckRole(roleUuid, true);
+
+            var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
+            if (String.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
 
             _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
