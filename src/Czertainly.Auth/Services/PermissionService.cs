@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Models.Dto;
@@ -23,6 +24,8 @@ namespace Czertainly.Auth.Services
 
         public async Task<SubjectPermissionsDto> GetRolePermissionsAsync(Guid roleUuid)
         {
+            await CheckRole(roleUuid);
+
             var permissions = await _repository.GetRolePermissions(roleUuid);
 
             return MergePermissions(permissions);
@@ -30,6 +33,8 @@ namespace Czertainly.Auth.Services
 
         public async Task<ResourcePermissionsDto> GetRoleResourcesPermissionsAsync(Guid roleUuid, Guid resourceUuid)
         {
+            await CheckRole(roleUuid);
+
             var permissions = await _repository.GetRoleResourcePermissions(roleUuid, resourceUuid);
             var subjectPermissions = MergePermissions(permissions);
 
@@ -41,6 +46,8 @@ namespace Czertainly.Auth.Services
 
         public async Task<List<ObjectPermissionsDto>> GetRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid)
         {
+            await CheckRole(roleUuid);
+
             var objectsMapping = new SortedDictionary<Guid, ObjectPermissionsDto>();
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Uuid);
 
@@ -60,6 +67,8 @@ namespace Czertainly.Auth.Services
 
         public async Task<SubjectPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
         {
+            var user = await _repositoryManager.User.GetByKeyAsync(userUuid);
+
             var permissions = await _repository.GetUserPermissions(userUuid);
 
             return MergePermissions(permissions);
@@ -71,6 +80,8 @@ namespace Czertainly.Auth.Services
 
         public async Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, RolePermissionsRequestDto rolePermissions)
         {
+            await CheckRole(roleUuid, true);
+
             _repository.DeleteRolePermissionsWithoutObjects(roleUuid);
 
             var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
@@ -81,13 +92,17 @@ namespace Czertainly.Auth.Services
             {
                 foreach (var resourcePermissions in rolePermissions.Resources)
                 {
-                    var resourceUuid = resourcesMapping[resourcePermissions.Name].Uuid;
+                    if (!resourcesMapping.TryGetValue(resourcePermissions.Name, out var resource)) throw new EntityNotFoundException($"Unknown resource '{resourcePermissions.Name}'");
+
+                    var resourceUuid = resource.Uuid;
                     if (resourcePermissions.AllowAllActions) _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, IsAllowed = true });
                     else if(resourcePermissions.Actions != null)
                     {
                         foreach (var actionName in resourcePermissions.Actions)
                         {
-                            var actionUuid = actionsMapping[actionName].Uuid;
+                            if (!actionsMapping.TryGetValue(actionName, out var action)) throw new EntityNotFoundException($"Unknown action '{actionName}'");
+
+                            var actionUuid = action.Uuid;
                             _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, ActionUuid = actionUuid, IsAllowed = true });
                         }
                     }
@@ -111,6 +126,8 @@ namespace Czertainly.Auth.Services
 
         public async Task SaveRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid, List<ObjectPermissionsRequestDto> objectsPermissions)
         {
+            await CheckRole(roleUuid, true);
+
             _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
 
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
@@ -125,6 +142,8 @@ namespace Czertainly.Auth.Services
 
         public async Task SaveRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid, ObjectPermissionsRequestDto objectPermissions)
         {
+            await CheckRole(roleUuid, true);
+
             _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
             var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
@@ -135,6 +154,8 @@ namespace Czertainly.Auth.Services
 
         public async Task DeleteRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid)
         {
+            await CheckRole(roleUuid, true);
+
             _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
 
             await _repositoryManager.SaveAsync();
@@ -142,12 +163,20 @@ namespace Czertainly.Auth.Services
 
         #endregion
 
+        private async Task CheckRole(Guid roleUuid, bool update = false)
+        {
+            var role = await _repositoryManager.Role.GetByKeyAsync(roleUuid);
+            if (update && role.SystemRole) throw new InvalidActionException("Cannot update system role permissions");
+        }
+
         private void AddRoleResourceObjectPermissions(Guid roleUuid, Guid resourceUuid, ObjectPermissionsRequestDto objectPermissions, List<string>? resourceActions, Dictionary<string, Models.Entities.Action> actionsMapping)
         {
             var allowActions = resourceActions == null || objectPermissions.Allow == null ? Enumerable.Empty<string>() : objectPermissions.Allow.Where(a => !resourceActions.Contains(a));
             foreach (var allowAction in allowActions)
             {
-                var actionUuid = actionsMapping[allowAction].Uuid;
+                if (!actionsMapping.TryGetValue(allowAction, out var action)) throw new EntityNotFoundException($"Unknown action '{allowAction}'");
+                var actionUuid = action.Uuid;
+
                 _repository.Create(new Permission
                 {
                     RoleUuid = roleUuid,
@@ -162,7 +191,9 @@ namespace Czertainly.Auth.Services
             {
                 foreach (var denyAction in objectPermissions.Deny)
                 {
-                    var actionUuid = actionsMapping[denyAction].Uuid;
+                    if (!actionsMapping.TryGetValue(denyAction, out var action)) throw new EntityNotFoundException($"Unknown action '{denyAction}'");
+                    var actionUuid = action.Uuid;
+
                     _repository.Create(new Permission
                     {
                         RoleUuid = roleUuid,
