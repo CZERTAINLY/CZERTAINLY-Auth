@@ -31,6 +31,17 @@ namespace Czertainly.Auth.Services
             _permissionService = permissionService;
         }
 
+        public override async Task<UserDetailDto> CreateAsync(ICrudRequestDto dto)
+        {
+            var userRequestDto = dto as UserRequestDto;
+            if (userRequestDto == null) throw new InvalidActionException("Cannot create user. Invalid DTO");
+
+            // check uniqueness of user
+            if (_repository.GetByConditionAsync(u => u.Username == userRequestDto.Username) != null) throw new EntityNotUniqueException($"User with username '{userRequestDto.Username}' already exists");
+
+            return await base.CreateAsync(dto);
+        }
+
         public override async Task<UserDetailDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
             var user = await _repository.GetByKeyAsync(key);
