@@ -128,6 +128,10 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnName("uuid")
                         .HasColumnOrder(0);
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
                     b.Property<string>("Description")
                         .HasColumnType("text")
                         .HasColumnName("description");
@@ -140,6 +144,10 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<bool>("SystemRole")
                         .HasColumnType("boolean")
                         .HasColumnName("system_role");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Uuid");
 
@@ -165,6 +173,10 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("certificate_uuid");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
                     b.Property<string>("Email")
                         .HasColumnType("text")
                         .HasColumnName("email");
@@ -184,6 +196,10 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<bool>("SystemUser")
                         .HasColumnType("boolean")
                         .HasColumnName("system_user");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("Username")
                         .IsRequired()

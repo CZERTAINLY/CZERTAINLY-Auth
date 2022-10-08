@@ -24,7 +24,7 @@ namespace Czertainly.Auth.Services
 
         public async Task<SubjectPermissionsDto> GetRolePermissionsAsync(Guid roleUuid)
         {
-            await CheckRole(roleUuid);
+            await CheckRole(roleUuid, false);
 
             var permissions = await _repository.GetRolePermissions(roleUuid);
 
@@ -33,7 +33,7 @@ namespace Czertainly.Auth.Services
 
         public async Task<ResourcePermissionsDto> GetRoleResourcesPermissionsAsync(Guid roleUuid, Guid resourceUuid)
         {
-            await CheckRole(roleUuid);
+            await CheckRole(roleUuid, false);
 
             var permissions = await _repository.GetRoleResourcePermissions(roleUuid, resourceUuid);
             var subjectPermissions = MergePermissions(permissions);
@@ -46,7 +46,7 @@ namespace Czertainly.Auth.Services
 
         public async Task<List<ObjectPermissionsDto>> GetRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid)
         {
-            await CheckRole(roleUuid);
+            await CheckRole(roleUuid, false);
 
             var objectsMapping = new SortedDictionary<Guid, ObjectPermissionsDto>();
             var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Uuid);
@@ -78,9 +78,9 @@ namespace Czertainly.Auth.Services
 
         #region Updating permissions
 
-        public async Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, RolePermissionsRequestDto rolePermissions)
+        public async Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, RolePermissionsRequestDto rolePermissions, bool allowUpdateSystemRole = false)
         {
-            await CheckRole(roleUuid, true);
+            await CheckRole(roleUuid, !allowUpdateSystemRole);
 
             _repository.DeleteRolePermissionsWithoutObjects(roleUuid);
 
@@ -170,10 +170,10 @@ namespace Czertainly.Auth.Services
 
         #endregion
 
-        private async Task CheckRole(Guid roleUuid, bool update = false)
+        private async Task CheckRole(Guid roleUuid, bool checkSystemRole)
         {
             var role = await _repositoryManager.Role.GetByKeyAsync(roleUuid);
-            if (update && role.SystemRole) throw new InvalidActionException("Cannot update system role permissions");
+            if (checkSystemRole && role.SystemRole) throw new InvalidActionException("Cannot update system role permissions");
         }
 
         private void AddRoleResourceObjectPermissions(Guid roleUuid, Guid resourceUuid, ObjectPermissionsRequestDto objectPermissions, List<string>? resourceActions, Dictionary<string, Models.Entities.Action> actionsMapping)

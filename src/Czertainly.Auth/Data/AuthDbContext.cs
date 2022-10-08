@@ -1,4 +1,5 @@
-﻿using Czertainly.Auth.Models.Entities;
+﻿using Czertainly.Auth.Common.Models.Entities;
+using Czertainly.Auth.Models.Entities;
 using Czertainly.Auth.Models.Entities.Configurations;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,29 @@ namespace Czertainly.Auth.Data
         public DbSet<Resource> Resources { get; set; }
         public DbSet<Models.Entities.Action> Actions { get; set; }
 
+        public override int SaveChanges()
+        {
+            UpdateTimestampedEntities();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            UpdateTimestampedEntities();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void UpdateTimestampedEntities()
+        {
+            var entities = ChangeTracker.Entries().Where(x => x.Entity is TimestampedEntity && (x.State == EntityState.Added || x.State == EntityState.Modified));
+
+            foreach (var entity in entities)
+            {
+                var timestampedEntity = (TimestampedEntity) entity.Entity;
+                if (entity.State == EntityState.Added) timestampedEntity.CreatedAt = DateTime.UtcNow;
+                timestampedEntity.UpdatedAt = DateTime.UtcNow;
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
