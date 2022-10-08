@@ -37,7 +37,8 @@ namespace Czertainly.Auth.Services
             if (userRequestDto == null) throw new InvalidActionException("Cannot create user. Invalid DTO");
 
             // check uniqueness of user
-            if (_repository.GetByConditionAsync(u => u.Username == userRequestDto.Username) != null) throw new EntityNotUniqueException($"User with username '{userRequestDto.Username}' already exists");
+            var checkedUser = await _repository.GetByConditionAsync(u => u.Username == userRequestDto.Username);
+            if (checkedUser != null) throw new EntityNotUniqueException($"User with username '{userRequestDto.Username}' already exists");
 
             return await base.CreateAsync(dto);
         }

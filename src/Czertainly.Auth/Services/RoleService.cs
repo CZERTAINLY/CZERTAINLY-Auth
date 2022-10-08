@@ -23,7 +23,8 @@ namespace Czertainly.Auth.Services
             if(roleRequestDto == null) throw new InvalidActionException("Cannot create role. Invalid DTO");
 
             // check uniqueness of role
-            if (_repository.GetByConditionAsync(r => r.Name == roleRequestDto.Name) != null) throw new EntityNotUniqueException($"Role with name '{roleRequestDto.Name}' already exists");
+            var checkedRole = await _repository.GetByConditionAsync(r => r.Name == roleRequestDto.Name);
+            if (checkedRole != null) throw new EntityNotUniqueException($"Role with name '{roleRequestDto.Name}' already exists");
 
             var newRole = await base.CreateAsync(dto);
             if (roleRequestDto.Permissions != null) await _permissionService.SaveRolePermissionsAsync(newRole.Uuid, roleRequestDto.Permissions);
