@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Czertainly.Auth.Models.Dto
 {
-    public record UserDto : CrudResponseDto
+    public record UserDto : CrudTimestampedResponseDto
     {
         [Required]
         public string Username { get; init; }

@@ -7,7 +7,7 @@ namespace Czertainly.Auth.Models.Entities;
 
 [Table("user")]
 [Index(nameof(Username), IsUnique = true)]
-public class User : BaseEntity
+public class User : TimestampedEntity
 {
     [Required]
     [Column("username")]
