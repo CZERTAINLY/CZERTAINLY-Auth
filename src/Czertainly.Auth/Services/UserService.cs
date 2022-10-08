@@ -114,7 +114,6 @@ namespace Czertainly.Auth.Services
                         var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = authenticationToken.Roles });
                         roleUuid = roleDto.Uuid;
                     }
-                    else throw new UnauthorizedException($"Unknown role '{authenticationToken.Roles}' for user with username '{authenticationToken.Username}'.");
 
                     await AssignRolesAsync(user.Uuid, roleUuid.HasValue ? new[] { roleUuid.Value } : Array.Empty<Guid>());
                 }
