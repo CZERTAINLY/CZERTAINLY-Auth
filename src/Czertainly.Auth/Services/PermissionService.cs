@@ -109,8 +109,8 @@ namespace Czertainly.Auth.Services
 
                     if (resourcePermissions.Objects != null)
                     {
-                        if (string.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
                         _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
+                        if (resourcePermissions.Objects.Count > 0 && string.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
                         var resourceActions = resourcePermissions.AllowAllActions ? null : (resourcePermissions.Actions ?? new List<string>());
                         foreach (var objectPermissions in resourcePermissions.Objects)
                         {
