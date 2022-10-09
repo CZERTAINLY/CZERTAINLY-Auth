@@ -53,5 +53,17 @@ namespace Czertainly.Auth.Services
             var roles = await _repositoryManager.Role.GetUserRolesAsync(userUuid);
             return _mapper.Map<List<RoleDto>>(roles);
         }
+
+        public async Task<RoleDetailDto> AssignUsersAsync(Guid roleUuid, IEnumerable<Guid> userUuids)
+        {
+            var role = await _repository.GetByKeyAsync(roleUuid);
+            var users = await _repositoryManager.User.GetByUuidsAsync(userUuids);
+
+            role.Users.Clear();
+            foreach (var user in users) role.Users.Add(user);
+            await _repositoryManager.SaveAsync();
+
+            return _mapper.Map<RoleDetailDto>(role);
+        }
     }
 }

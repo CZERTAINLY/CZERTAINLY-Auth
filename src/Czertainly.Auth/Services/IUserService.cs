@@ -15,5 +15,7 @@ namespace Czertainly.Auth.Services
         Task<UserDetailDto> AssignRolesAsync(Guid userUuid, IEnumerable<Guid> roleUuids);
         Task<UserDetailDto> RemoveRoleAsync(Guid userUuid, Guid roleUuid);
 
+        Task<List<UserDto>> GetRoleUsersAsync(Guid roleUuid);
+
     }
 }

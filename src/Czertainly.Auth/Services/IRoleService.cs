@@ -8,5 +8,7 @@ namespace Czertainly.Auth.Services
     {
         Task<List<RoleDto>> GetUserRolesAsync(Guid userUuid);
 
+        Task<RoleDetailDto> AssignUsersAsync(Guid roleUuid, IEnumerable<Guid> userUuids);
+
     }
 }

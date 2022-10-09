@@ -22,6 +22,9 @@ public class User : TimestampedEntity
     [Column("email")]
     public string? Email { get; set; }
 
+    [Column("description")]
+    public string? Description { get; set; }
+
     [Required]
     [Column("enabled")]
     public bool Enabled { get; set; }

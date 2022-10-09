@@ -6,7 +6,10 @@ namespace Czertainly.Auth.Models.Dto
     public record ObjectPermissionsDto
     {
         [Required]
-        public Guid Uuid { get; set; }
+        public Guid Uuid { get; init; }
+
+        [Required]
+        public string Name { get; init; }
 
         [Required]
         public List<string> Allow { get; init; } = new List<string>();
