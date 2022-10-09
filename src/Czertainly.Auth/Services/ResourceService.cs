@@ -104,7 +104,7 @@ namespace Czertainly.Auth.Services
                 await _repositoryManager.SaveAsync();
                 await transaction.CommitAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 throw;

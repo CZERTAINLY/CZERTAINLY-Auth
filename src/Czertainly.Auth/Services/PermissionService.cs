@@ -82,45 +82,56 @@ namespace Czertainly.Auth.Services
         {
             await CheckRole(roleUuid, !allowUpdateSystemRole);
 
-            _repository.DeleteRolePermissionsWithoutObjects(roleUuid);
+            var transaction = await _repositoryManager.BeginTransactionAsync();
 
-            var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
-            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
-
-            if (rolePermissions.AllowAllResources) _repository.Create(new Permission { RoleUuid = roleUuid, IsAllowed = true });
-            if (rolePermissions.Resources != null)
+            try
             {
-                foreach (var resourcePermissions in rolePermissions.Resources)
+                _repository.DeleteRolePermissionsWithoutObjects(roleUuid);
+
+                var resourcesMapping = await _repositoryManager.Resource.GetDictionaryMap(r => r.Name);
+                var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
+
+                if (rolePermissions.AllowAllResources) _repository.Create(new Permission { RoleUuid = roleUuid, IsAllowed = true });
+                if (rolePermissions.Resources != null)
                 {
-                    if (!resourcesMapping.TryGetValue(resourcePermissions.Name, out var resource)) throw new EntityNotFoundException($"Unknown resource '{resourcePermissions.Name}'");
-
-                    var resourceUuid = resource.Uuid;
-                    if (resourcePermissions.AllowAllActions) _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, IsAllowed = true });
-                    else if(resourcePermissions.Actions != null)
+                    foreach (var resourcePermissions in rolePermissions.Resources)
                     {
-                        foreach (var actionName in resourcePermissions.Actions)
-                        {
-                            if (!actionsMapping.TryGetValue(actionName, out var action)) throw new EntityNotFoundException($"Unknown action '{actionName}'");
+                        if (!resourcesMapping.TryGetValue(resourcePermissions.Name, out var resource)) throw new EntityNotFoundException($"Unknown resource '{resourcePermissions.Name}'");
 
-                            var actionUuid = action.Uuid;
-                            _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, ActionUuid = actionUuid, IsAllowed = true });
+                        var resourceUuid = resource.Uuid;
+                        if (resourcePermissions.AllowAllActions) _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, IsAllowed = true });
+                        else if (resourcePermissions.Actions != null)
+                        {
+                            foreach (var actionName in resourcePermissions.Actions)
+                            {
+                                if (!actionsMapping.TryGetValue(actionName, out var action)) throw new EntityNotFoundException($"Unknown action '{actionName}'");
+
+                                var actionUuid = action.Uuid;
+                                _repository.Create(new Permission { RoleUuid = roleUuid, ResourceUuid = resourceUuid, ActionUuid = actionUuid, IsAllowed = true });
+                            }
                         }
-                    }
 
-                    if (resourcePermissions.Objects != null)
-                    {
-                        _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
-                        if (resourcePermissions.Objects.Count > 0 && string.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
-                        var resourceActions = resourcePermissions.AllowAllActions ? null : (resourcePermissions.Actions ?? new List<string>());
-                        foreach (var objectPermissions in resourcePermissions.Objects)
+                        if (resourcePermissions.Objects != null)
                         {
-                            AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourceActions, actionsMapping);
+                            _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
+                            if (resourcePermissions.Objects.Count > 0 && string.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
+                            var resourceActions = resourcePermissions.AllowAllActions ? null : (resourcePermissions.Actions ?? new List<string>());
+                            foreach (var objectPermissions in resourcePermissions.Objects)
+                            {
+                                AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourceActions, actionsMapping);
+                            }
                         }
                     }
                 }
-            }
 
-            await _repositoryManager.SaveAsync();
+                await _repositoryManager.SaveAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
 
             return await GetRolePermissionsAsync(roleUuid);
         }
@@ -132,16 +143,26 @@ namespace Czertainly.Auth.Services
             var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
             if (String.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
 
-            _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
-
-            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
-            var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
-            foreach (var objectPermissions in objectsPermissions)
+            var transaction = await _repositoryManager.BeginTransactionAsync();
+            try
             {
-                AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
-            }
+                _repository.DeleteRoleResourceObjectsPermissions(roleUuid, resourceUuid);
 
-            await _repositoryManager.SaveAsync();
+                var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
+                var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
+                foreach (var objectPermissions in objectsPermissions)
+                {
+                    AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
+                }
+
+                await _repositoryManager.SaveAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task SaveRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid, ObjectPermissionsRequestDto objectPermissions)
@@ -151,12 +172,22 @@ namespace Czertainly.Auth.Services
             var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
             if (String.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
 
-            _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
-            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
-            var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
-            AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
+            var transaction = await _repositoryManager.BeginTransactionAsync();
+            try
+            {
+                _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
+                var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
+                var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
+                AddRoleResourceObjectPermissions(roleUuid, resourceUuid, objectPermissions, resourcePermissions.AllowAllActions ? null : resourcePermissions.Actions, actionsMapping);
 
-            await _repositoryManager.SaveAsync();
+                await _repositoryManager.SaveAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task DeleteRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid)
