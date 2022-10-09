@@ -8,6 +8,7 @@ namespace Czertainly.Auth.Models.Dto
         [Required]
         public Guid Uuid { get; init; }
 
+        [Required]
         public string Name { get; init; }
 
         public List<string>? Allow { get; init; }
