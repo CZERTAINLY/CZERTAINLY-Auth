@@ -65,6 +65,10 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_allowed");
 
+                    b.Property<string>("ObjectName")
+                        .HasColumnType("text")
+                        .HasColumnName("object_name");
+
                     b.Property<Guid?>("ObjectUuid")
                         .HasColumnType("uuid")
                         .HasColumnName("object_uuid");
@@ -174,6 +178,10 @@ namespace Czertainly.Auth.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<string>("Email")
                         .HasColumnType("text")

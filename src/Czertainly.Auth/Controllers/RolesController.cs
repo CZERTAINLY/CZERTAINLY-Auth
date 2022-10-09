@@ -60,5 +60,21 @@ namespace Czertainly.Auth.Controllers
             return NoContent();
         }
 
+        [HttpGet("{roleUuid}/users")]
+        public async Task<ActionResult<List<UserDto>>> GetRoleUsersAsync([FromServices] IUserService userService, [FromRoute] Guid roleUuid)
+        {
+            var result = await userService.GetRoleUsersAsync(roleUuid);
+
+            return Ok(result);
+        }
+
+        [HttpPatch("{roleUuid}/users")]
+        public async Task<ActionResult<RoleDetailDto>> AssignRoleUsersAsync([FromRoute] Guid roleUuid, [FromBody] IEnumerable<Guid> userUuids)
+        {
+            var result = await _roleService.AssignUsersAsync(roleUuid, userUuids);
+
+            return Ok(result);
+        }
+
     }
 }

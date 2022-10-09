@@ -235,5 +235,10 @@ namespace Czertainly.Auth.Services
             return isValid;
         }
 
+        public async Task<List<UserDto>> GetRoleUsersAsync(Guid roleUuid)
+        {
+            var users = await _repositoryManager.User.GetRoleUsersAsync(roleUuid);
+            return _mapper.Map<List<UserDto>>(users);
+        }
     }
 }

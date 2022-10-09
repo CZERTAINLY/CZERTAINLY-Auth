@@ -68,6 +68,7 @@ namespace Czertainly.Auth.Data.Migrations
                     first_name = table.Column<string>(type: "text", nullable: true),
                     last_name = table.Column<string>(type: "text", nullable: true),
                     email = table.Column<string>(type: "text", nullable: true),
+                    description = table.Column<string>(type: "text", nullable: true),
                     enabled = table.Column<bool>(type: "boolean", nullable: false),
                     system_user = table.Column<bool>(type: "boolean", nullable: false),
                     certificate_uuid = table.Column<Guid>(type: "uuid", nullable: true),
@@ -117,6 +118,7 @@ namespace Czertainly.Auth.Data.Migrations
                     resource_uuid = table.Column<Guid>(type: "uuid", nullable: true),
                     action_uuid = table.Column<Guid>(type: "uuid", nullable: true),
                     object_uuid = table.Column<Guid>(type: "uuid", nullable: true),
+                    object_name = table.Column<string>(type: "text", nullable: true),
                     is_allowed = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>

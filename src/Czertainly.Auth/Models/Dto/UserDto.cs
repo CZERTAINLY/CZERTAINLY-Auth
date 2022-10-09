@@ -14,6 +14,8 @@ namespace Czertainly.Auth.Models.Dto
 
         public string Email { get; init; }
 
+        public string? Description { get; init; }
+
         [Required]
         public bool Enabled { get; init; }
 

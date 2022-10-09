@@ -11,5 +11,9 @@ namespace Czertainly.Auth.Data.Repositiories
         {
         }
 
+        public async Task<IEnumerable<User>> GetRoleUsersAsync(Guid roleUuid)
+        {
+            return await _dbSet.Include(u => u.Roles).Where(u => u.Roles.Any(r => r.Uuid == roleUuid)).ToListAsync();
+        }
     }
 }

@@ -29,6 +29,9 @@ public class Permission : BaseEntity
     [Column("object_uuid")]
     public Guid? ObjectUuid { get; set; }
 
+    [Column("object_name")]
+    public string? ObjectName { get; set; }
+
     [Required]
     [Column("is_allowed")]
     public bool IsAllowed { get; set; }

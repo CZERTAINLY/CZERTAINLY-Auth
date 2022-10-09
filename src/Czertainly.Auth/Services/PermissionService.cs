@@ -190,6 +190,7 @@ namespace Czertainly.Auth.Services
                     ResourceUuid = resourceUuid,
                     ActionUuid = actionUuid,
                     ObjectUuid = objectPermissions.Uuid,
+                    ObjectName = objectPermissions.Name,
                     IsAllowed = true
                 });
             }
@@ -207,6 +208,7 @@ namespace Czertainly.Auth.Services
                         ResourceUuid = resourceUuid,
                         ActionUuid = actionUuid,
                         ObjectUuid = objectPermissions.Uuid,
+                        ObjectName = objectPermissions.Name,
                         IsAllowed = false
                     });
                 }
