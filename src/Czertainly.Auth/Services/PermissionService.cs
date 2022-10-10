@@ -55,7 +55,7 @@ namespace Czertainly.Auth.Services
             foreach (var permission in permissions)
             {
                 if (!permission.ActionUuid.HasValue || !permission.ObjectUuid.HasValue) continue;
-                if (!objectsMapping.TryGetValue(permission.ObjectUuid.Value, out var objectPermissions)) objectsMapping.Add(permission.ObjectUuid.Value, objectPermissions = new ObjectPermissionsDto { Uuid = permission.ObjectUuid.Value });
+                if (!objectsMapping.TryGetValue(permission.ObjectUuid.Value, out var objectPermissions)) objectsMapping.Add(permission.ObjectUuid.Value, objectPermissions = new ObjectPermissionsDto { Uuid = permission.ObjectUuid.Value, Name = permission.ObjectName });
 
                 var actionName = actionsMapping[permission.ActionUuid.Value].Name;
                 if (permission.IsAllowed) objectPermissions.Allow.Add(actionName);
@@ -252,7 +252,8 @@ namespace Czertainly.Auth.Services
 
             var resourcesMapping = new SortedDictionary<string, ResourcePermissionsDto>(StringComparer.Ordinal);
             var resourceActionsMapping = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-            var resourceObjectsMapping = new Dictionary<string, HashSet<Guid>>();
+            var resourceObjectsMapping = new Dictionary<string, HashSet<Guid>>(StringComparer.Ordinal);
+            var objectsNamesMapping = new Dictionary<Guid, string?>();
             var objectAllowedActionsMapping = new Dictionary<Guid, HashSet<string>>();
             var objectDeniedActionsMapping = new Dictionary<Guid, HashSet<string>>();
 
@@ -289,6 +290,7 @@ namespace Czertainly.Auth.Services
                 // add object UUID to resource object permissions
                 var objectUuid = permission.ObjectUuid.Value;
                 if (!resourceObjectsMapping.TryGetValue(resourceName, out var resourceObjects)) resourceObjectsMapping.Add(resourceName, resourceObjects = new HashSet<Guid>());
+                if (!objectsNamesMapping.ContainsKey(objectUuid)) objectsNamesMapping.Add(objectUuid, permission.ObjectName);
                 resourceObjects.Add(objectUuid);
 
                 // add action to object allow/deny actions
@@ -313,7 +315,7 @@ namespace Czertainly.Auth.Services
                 {
                     foreach (var objectUuid in resourceObjects)
                     {
-                        var objectPermissionsDto = new ObjectPermissionsDto { Uuid = objectUuid };
+                        var objectPermissionsDto = new ObjectPermissionsDto { Uuid = objectUuid, Name = objectsNamesMapping[objectUuid] };
 
                         // first add denied actions
                         if (objectDeniedActionsMapping.TryGetValue(objectUuid, out var deniedActions))
