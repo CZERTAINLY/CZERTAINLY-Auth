@@ -10,6 +10,7 @@ using NLog.Web;
 using NLog;
 using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Models.Config;
+using System.Net.Mime;
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
@@ -30,7 +31,12 @@ try
     builder.Services.AddControllers()
         .ConfigureApiBehaviorOptions(options =>
         {
-            //options.SuppressInferBindingSourcesForParameters = true;
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var result = new ValidationFailedResult(context.ModelState);
+                result.ContentTypes.Add(MediaTypeNames.Application.Json);
+                return result;
+            };
         });
 
     builder.Services.AddEndpointsApiExplorer();
