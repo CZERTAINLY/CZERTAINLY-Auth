@@ -123,8 +123,11 @@ namespace Czertainly.Auth.Services
                         roleUuid = roleDto.Uuid;
                     }
 
-                    _logger.LogInformation($"Assign roles '{authenticationToken.Roles}' to user '{authenticationToken.Username}'");
-                    await AssignRolesAsync(user.Uuid, roleUuid.HasValue ? new[] { roleUuid.Value } : Array.Empty<Guid>());
+                    if (roleUuid.HasValue)
+                    {
+                        _logger.LogInformation($"Assign roles '{authenticationToken.Roles}' to user '{authenticationToken.Username}'");
+                        await AssignRolesAsync(user.Uuid, new[] { roleUuid.Value });
+                    }
                 }
                 catch (UnauthorizedException) { throw; }
                 catch (Exception ex)

@@ -8,20 +8,15 @@ namespace Czertainly.Auth.Services
 {
     public class PermissionService : IPermissionService
     {
-        private readonly IMapper _mapper;
         protected readonly ILogger _logger;
         private readonly IPermissionRepository _repository;
         private readonly IRepositoryManager _repositoryManager;
 
-        private readonly IResourceService _resourceService;
-
-        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<PermissionService> logger, IResourceService resourceService)
+        public PermissionService(IRepositoryManager repositoryManager, ILogger<PermissionService> logger)
         {
-            _mapper = mapper;
             _logger = logger;
             _repositoryManager = repositoryManager;
             _repository = repositoryManager.Permission;
-            _resourceService = resourceService;
         }
 
         #region Retrieving permissions
