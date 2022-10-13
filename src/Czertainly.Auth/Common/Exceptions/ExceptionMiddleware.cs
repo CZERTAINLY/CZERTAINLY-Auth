@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Czertainly.Auth.Common.Logging;
+using System.Net;
 
 namespace Czertainly.Auth.Common.Exceptions
 {
@@ -25,7 +26,7 @@ namespace Czertainly.Auth.Common.Exceptions
             {
                 var unknownException = ex is not RequestException;
                 if (unknownException) _logger.LogError($"Internal server error: {ex}");
-                else _logger.LogError(ex.ToString());
+                else _logger.LogError(ex.InnerException == null ? ex.Message : $"{ex.Message}:{ex.InnerException.Message}");
 
                 await HandleExceptionAsync(httpContext, ex);
             }

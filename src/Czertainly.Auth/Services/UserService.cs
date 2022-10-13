@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Czertainly.Auth.Common.Data;
 using Czertainly.Auth.Common.Exceptions;
+using Czertainly.Auth.Common.Logging;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
@@ -23,7 +24,8 @@ namespace Czertainly.Auth.Services
         private readonly IRoleService _roleService;
         private readonly IPermissionService _permissionService;
 
-        public UserService(IRepositoryManager repositoryManager, IMapper mapper, IOptions<AuthOptions> authOptions, IRoleService roleService, IPermissionService permissionService) : base(repositoryManager, repositoryManager.User, mapper)
+        public UserService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<UserService> logger, IOptions<AuthOptions> authOptions, IRoleService roleService, IPermissionService permissionService)
+            : base(repositoryManager, repositoryManager.User, mapper, logger)
         {
             _authOptions = authOptions.Value;
 
@@ -64,11 +66,13 @@ namespace Czertainly.Auth.Services
             User? user = null;
             if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
             {
+                _logger.LogInformation("Authenticating user with certificate");
                 var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
                 var isCertValid = VerifyClientCertificate(clientCertificate, out var chainStatusInfos);
                 if (!isCertValid) throw new UnauthorizedException("User client certificate is invalid.", new Exception(string.Join('\n', chainStatusInfos)));
 
                 var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
+                _logger.LogInformation("Certificate parsed and verified. Fingerprint: " + sha256Fingerprint);
 
                 user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
 
@@ -77,6 +81,7 @@ namespace Czertainly.Auth.Services
             else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
             {
                 // Authentication token processing
+                _logger.LogInformation("Authenticating user with OIDC token");
                 AuthenticationTokenDto? authenticationToken = null;
                 try
                 {
@@ -91,6 +96,8 @@ namespace Czertainly.Auth.Services
 
                 if (authenticationToken == null) throw new UnauthorizedException("Authentication token is empty or invalid JSON.");
 
+                _logger.LogInformation($"Auth token contains user with username '{authenticationToken.Username}' and roles '{authenticationToken.Roles}'");
+
                 user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
                 if (user == null && !_authOptions.CreateUnknownUsers) throw new UnauthorizedException($"Unknown user with username '{authenticationToken.Username}'.");
 
@@ -100,6 +107,7 @@ namespace Czertainly.Auth.Services
                 {
                     if (user == null)
                     {
+                        _logger.LogInformation($"Creating new user with username '{authenticationToken.Username}'");
                         user = _mapper.Map<User>(authenticationToken);
                         _repository.Create(user);
                         await _repositoryManager.SaveAsync();
@@ -111,10 +119,12 @@ namespace Czertainly.Auth.Services
                     if (role != null) roleUuid = role.Uuid;
                     else if (_authOptions.CreateUnknownRoles)
                     {
+                        _logger.LogInformation($"Creating new role with name '{authenticationToken.Roles}'");
                         var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = authenticationToken.Roles });
                         roleUuid = roleDto.Uuid;
                     }
 
+                    _logger.LogInformation($"Assign roles '{authenticationToken.Roles}' to user '{authenticationToken.Username}'");
                     await AssignRolesAsync(user.Uuid, roleUuid.HasValue ? new[] { roleUuid.Value } : Array.Empty<Guid>());
                 }
                 catch (UnauthorizedException) { throw; }
@@ -128,12 +138,17 @@ namespace Czertainly.Auth.Services
             }
             else if (!string.IsNullOrEmpty(authenticationRequestDto.SystemUsername))
             {
+                _logger.LogInformation($"Authenticating system user with username '{authenticationRequestDto.SystemUsername}'");
                 user = await _repository.GetByConditionAsync(u => u.SystemUser && u.Username == authenticationRequestDto.SystemUsername);
 
                 if (user == null) throw new UnauthorizedException("Unknown system user for specified username: " + authenticationRequestDto.SystemUsername);
             }
 
-            if (user == null) return new AuthenticationResponseDto { Authenticated = false };
+            if (user == null)
+            {
+                _logger.LogInformation("Authenticated as anonymous user");
+                return new AuthenticationResponseDto { Authenticated = false };
+            }
 
             if (!user.Enabled) throw new UnauthorizedException($"User '{user.Username}' is disabled");
 

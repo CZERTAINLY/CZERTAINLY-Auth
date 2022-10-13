@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Czertainly.Auth.Common.Helpers;
+using Czertainly.Auth.Common.Logging;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Models.Dto;
@@ -13,7 +14,8 @@ namespace Czertainly.Auth.Services
 
         private readonly IActionService _actionService;
 
-        public ResourceService(IRepositoryManager repositoryManager, IMapper mapper, IActionService actionService) : base(repositoryManager, repositoryManager.Resource, mapper)
+        public ResourceService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<ResourceService> logger, IActionService actionService)
+            : base(repositoryManager, repositoryManager.Resource, mapper, logger)
         {
             _actionService = actionService;
         }
@@ -26,6 +28,7 @@ namespace Czertainly.Auth.Services
 
         public async Task<SyncResourcesResponseDto> SyncResourcesAsync(List<ResourceSyncRequestDto> resources)
         {
+            _logger.LogInformation("Synchronizing resources from Core service");
             var result = new SyncResourcesResponseDto();
 
             var resourcesUsed = new HashSet<string>(StringComparer.Ordinal);
@@ -84,6 +87,8 @@ namespace Czertainly.Auth.Services
                 {
                     if (!resourcesUsed.Contains(resource.Name))
                     {
+                        _logger.LogWarning($"Resource '{resource.Name}' is not used and will be deleted.");
+
                         await _repository.DeleteAsync(resource.Uuid);
                         result.Resources.Removed.Add(resource.Name);
                     }
@@ -94,6 +99,8 @@ namespace Czertainly.Auth.Services
                 {
                     if (!actionsUsed.Contains(action.Name))
                     {
+                        _logger.LogWarning($"Action '{action.Name}' is not used and will be deleted.");
+
                         await _actionService.DeleteAsync(action.Uuid);
                         result.Actions.Removed.Add(action.Name);
                     }

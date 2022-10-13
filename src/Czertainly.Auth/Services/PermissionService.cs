@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Czertainly.Auth.Common.Exceptions;
-using Czertainly.Auth.Common.Services;
+using Czertainly.Auth.Common.Logging;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
@@ -10,12 +10,14 @@ namespace Czertainly.Auth.Services
     public class PermissionService : IPermissionService
     {
         private readonly IMapper _mapper;
+        protected readonly ILogger _logger;
         private readonly IPermissionRepository _repository;
         private readonly IRepositoryManager _repositoryManager;
 
-        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper)
+        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<PermissionService> logger)
         {
             _mapper = mapper;
+            _logger = logger;
             _repositoryManager = repositoryManager;
             _repository = repositoryManager.Permission;
         }
@@ -38,7 +40,7 @@ namespace Czertainly.Auth.Services
             var permissions = await _repository.GetRoleResourcePermissions(roleUuid, resourceUuid);
             var subjectPermissions = MergePermissions(permissions);
 
-            if(subjectPermissions.Resources.Count != 0) return subjectPermissions.Resources[0];
+            if (subjectPermissions.Resources.Count != 0) return subjectPermissions.Resources[0];
 
             var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
             return new ResourcePermissionsDto { Name = resource.Name };
@@ -80,7 +82,8 @@ namespace Czertainly.Auth.Services
 
         public async Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, RolePermissionsRequestDto rolePermissions, bool allowUpdateSystemRole = false)
         {
-            await CheckRole(roleUuid, !allowUpdateSystemRole);
+            var role = await CheckRole(roleUuid, !allowUpdateSystemRole);
+            _logger.LogInformation($"Saving permissions of role '{role.Name}:{roleUuid}'");
 
             var transaction = await _repositoryManager.BeginTransactionAsync();
 
@@ -138,9 +141,10 @@ namespace Czertainly.Auth.Services
 
         public async Task SaveRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid, List<ObjectPermissionsRequestDto> objectsPermissions)
         {
-            await CheckRole(roleUuid, true);
-
+            var role = await CheckRole(roleUuid, true);
             var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
+            _logger.LogInformation($"Saving permissions of role '{role.Name}:{roleUuid}' for resource {resource.Name}");
+
             if (String.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
 
             var transaction = await _repositoryManager.BeginTransactionAsync();
@@ -167,9 +171,10 @@ namespace Czertainly.Auth.Services
 
         public async Task SaveRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid, ObjectPermissionsRequestDto objectPermissions)
         {
-            await CheckRole(roleUuid, true);
-
+            var role = await CheckRole(roleUuid, true);
             var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
+            _logger.LogInformation($"Saving permissions of role '{role.Name}:{roleUuid}' for resource {resource.Name} and its object {objectUuid}");
+
             if (String.IsNullOrEmpty(resource.ListObjectsEndpoint)) throw new InvalidActionException($"Cannot save object permissions. Resource '{resource.DisplayName}' does not support object access permissions");
 
             var transaction = await _repositoryManager.BeginTransactionAsync();
@@ -192,7 +197,9 @@ namespace Czertainly.Auth.Services
 
         public async Task DeleteRoleObjectPermissionsAsync(Guid roleUuid, Guid resourceUuid, Guid objectUuid)
         {
-            await CheckRole(roleUuid, true);
+            var role = await CheckRole(roleUuid, true);
+            var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
+            _logger.LogInformation($"Deleting permissions of role '{role.Name}:{roleUuid}' for resource {resource.Name} and its object {objectUuid}");
 
             _repository.DeleteRoleResourceObjectPermissions(roleUuid, resourceUuid, objectUuid);
 
@@ -201,10 +208,12 @@ namespace Czertainly.Auth.Services
 
         #endregion
 
-        private async Task CheckRole(Guid roleUuid, bool checkSystemRole)
+        private async Task<Role> CheckRole(Guid roleUuid, bool checkSystemRole)
         {
             var role = await _repositoryManager.Role.GetByKeyAsync(roleUuid);
             if (checkSystemRole && role.SystemRole) throw new InvalidActionException("Cannot update system role permissions");
+
+            return role;
         }
 
         private void AddRoleResourceObjectPermissions(Guid roleUuid, Guid resourceUuid, ObjectPermissionsRequestDto objectPermissions, List<string>? resourceActions, Dictionary<string, Models.Entities.Action> actionsMapping)

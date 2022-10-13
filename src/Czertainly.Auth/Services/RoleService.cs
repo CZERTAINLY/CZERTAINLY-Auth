@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Czertainly.Auth.Common.Exceptions;
+using Czertainly.Auth.Common.Logging;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
@@ -12,7 +13,8 @@ namespace Czertainly.Auth.Services
     {
         private readonly IPermissionService _permissionService;
 
-        public RoleService(IRepositoryManager repositoryManager, IMapper mapper, IPermissionService permissionService) : base(repositoryManager, repositoryManager.Role, mapper)
+        public RoleService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<RoleService> logger, IPermissionService permissionService)
+            : base(repositoryManager, repositoryManager.Role, mapper, logger)
         {
             _permissionService = permissionService;
         }

@@ -13,12 +13,14 @@ namespace Czertainly.Auth.Common.Services
         where TDetailResponseDto : ICrudResponseDto, new()
     {
         protected readonly IMapper _mapper;
+        protected readonly ILogger _logger;
         protected readonly IBaseRepository<TEntity> _repository;
         protected readonly IRepositoryManager _repositoryManager;
 
-        public CrudService(IRepositoryManager repositoryManager, IBaseRepository<TEntity> repository, IMapper mapper)
+        public CrudService(IRepositoryManager repositoryManager, IBaseRepository<TEntity> repository, IMapper mapper, ILogger logger)
         {
             _mapper = mapper;
+            _logger = logger;
             _repository = repository;
             _repositoryManager = repositoryManager;
         }

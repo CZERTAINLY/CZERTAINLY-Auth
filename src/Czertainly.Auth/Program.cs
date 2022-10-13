@@ -11,8 +11,9 @@ using NLog;
 using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Models.Config;
 using System.Net.Mime;
+using Czertainly.Auth.Common.Logging;
 
-var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
 
 try
@@ -21,13 +22,19 @@ try
 
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
-    builder.Host.UseNLog();
+    builder.Host.UseNLog(
+        new NLogAspNetCoreOptions
+        {
+            RemoveLoggerFactoryFilter = false,
+        }
+    );
 
     // Add services to the container.
     builder.Services.AddAutoMapper(cfg =>
     {
         cfg.AllowNullCollections = true;
     }, typeof(Program));
+
     builder.Services.AddControllers()
         .ConfigureApiBehaviorOptions(options =>
         {
