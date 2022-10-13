@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Czertainly.Auth.Common.Exceptions;
-using Czertainly.Auth.Common.Logging;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;

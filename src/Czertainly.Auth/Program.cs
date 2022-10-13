@@ -11,7 +11,6 @@ using NLog;
 using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Models.Config;
 using System.Net.Mime;
-using Czertainly.Auth.Common.Logging;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("init main");
