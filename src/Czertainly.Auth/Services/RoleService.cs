@@ -12,7 +12,8 @@ namespace Czertainly.Auth.Services
     {
         private readonly IPermissionService _permissionService;
 
-        public RoleService(IRepositoryManager repositoryManager, IMapper mapper, IPermissionService permissionService) : base(repositoryManager, repositoryManager.Role, mapper)
+        public RoleService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<RoleService> logger, IPermissionService permissionService)
+            : base(repositoryManager, repositoryManager.Role, mapper, logger)
         {
             _permissionService = permissionService;
         }
