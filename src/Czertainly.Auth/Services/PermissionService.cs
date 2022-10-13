@@ -13,12 +13,15 @@ namespace Czertainly.Auth.Services
         private readonly IPermissionRepository _repository;
         private readonly IRepositoryManager _repositoryManager;
 
-        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<PermissionService> logger)
+        private readonly IResourceService _resourceService;
+
+        public PermissionService(IRepositoryManager repositoryManager, IMapper mapper, ILogger<PermissionService> logger, IResourceService resourceService)
         {
             _mapper = mapper;
             _logger = logger;
             _repositoryManager = repositoryManager;
             _repository = repositoryManager.Permission;
+            _resourceService = resourceService;
         }
 
         #region Retrieving permissions
@@ -29,7 +32,10 @@ namespace Czertainly.Auth.Services
 
             var permissions = await _repository.GetRolePermissions(roleUuid);
 
-            return MergePermissions(permissions);
+            var rolePermissions = MergePermissions(permissions);
+            await AddVerbosePermissions(rolePermissions);
+
+            return rolePermissions;
         }
 
         public async Task<ResourcePermissionsDto> GetRoleResourcesPermissionsAsync(Guid roleUuid, Guid resourceUuid)
@@ -39,31 +45,21 @@ namespace Czertainly.Auth.Services
             var permissions = await _repository.GetRoleResourcePermissions(roleUuid, resourceUuid);
             var subjectPermissions = MergePermissions(permissions);
 
-            if (subjectPermissions.Resources.Count != 0) return subjectPermissions.Resources[0];
-
             var resource = await _repositoryManager.Resource.GetByKeyAsync(resourceUuid);
-            return new ResourcePermissionsDto { Name = resource.Name };
+            if (subjectPermissions.Resources.Count != 0)
+            {
+                var resourcePermissions = subjectPermissions.Resources[0];
+                AddVerboseResourcePermissions(resourcePermissions, resource);
+                return resourcePermissions;
+            }
+
+            return new ResourcePermissionsDto { Name = resource.Name, AllowAllActions = subjectPermissions.AllowAllResources };
         }
 
         public async Task<List<ObjectPermissionsDto>> GetRoleObjectsPermissionsAsync(Guid roleUuid, Guid resourceUuid)
         {
-            await CheckRole(roleUuid, false);
-
-            var objectsMapping = new SortedDictionary<Guid, ObjectPermissionsDto>();
-            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Uuid);
-
-            var permissions = await _repository.GetRoleResourceObjectsPermissions(roleUuid, resourceUuid);
-            foreach (var permission in permissions)
-            {
-                if (!permission.ActionUuid.HasValue || !permission.ObjectUuid.HasValue) continue;
-                if (!objectsMapping.TryGetValue(permission.ObjectUuid.Value, out var objectPermissions)) objectsMapping.Add(permission.ObjectUuid.Value, objectPermissions = new ObjectPermissionsDto { Uuid = permission.ObjectUuid.Value, Name = permission.ObjectName });
-
-                var actionName = actionsMapping[permission.ActionUuid.Value].Name;
-                if (permission.IsAllowed) objectPermissions.Allow.Add(actionName);
-                else objectPermissions.Deny.Add(actionName);
-            }
-
-            return objectsMapping.Values.ToList();
+            var resourcePermissions = await GetRoleResourcesPermissionsAsync(roleUuid, resourceUuid);
+            return resourcePermissions.Objects;
         }
 
         public async Task<SubjectPermissionsDto> GetUserPermissionsAsync(Guid userUuid)
@@ -73,6 +69,39 @@ namespace Czertainly.Auth.Services
             var permissions = await _repository.GetUserPermissions(userUuid);
 
             return MergePermissions(permissions);
+        }
+
+        private async Task AddVerbosePermissions(SubjectPermissionsDto subjectPermissions)
+        {
+            var allResourcesMap = await _repositoryManager.Resource.GetResourcesWithActionsMap();
+
+            foreach (var resourcePermissions in subjectPermissions.Resources)
+            {
+                if (!allResourcesMap.TryGetValue(resourcePermissions.Name, out var resource)) _logger.LogWarning($"Missing resource {resourcePermissions.Name} that is used in merging permissions");
+                else AddVerboseResourcePermissions(resourcePermissions, resource);
+
+                allResourcesMap.Remove(resourcePermissions.Name);
+            }
+
+            // add empty resources
+            foreach (var resource in allResourcesMap.Values)
+            {
+                subjectPermissions.Resources.Add(new ResourcePermissionsDto { Name = resource.Name, AllowAllActions = subjectPermissions.AllowAllResources });
+            }
+        }
+
+        private void AddVerboseResourcePermissions(ResourcePermissionsDto resourcePermissions, Resource resource)
+        {
+            foreach (var objectPermissions in resourcePermissions.Objects)
+            {
+                foreach (var action in resource.Actions)
+                {
+                    if ((resourcePermissions.AllowAllActions || resourcePermissions.Actions.Contains(action.Name))
+                        && !objectPermissions.Deny.Contains(action.Name) && !objectPermissions.Allow.Contains(action.Name))
+                        objectPermissions.Allow.Add(action.Name);
+                }
+                objectPermissions.Allow.Sort();
+            }
         }
 
         #endregion

@@ -7,6 +7,8 @@ namespace Czertainly.Auth.Data.Contracts
     {
         Task<List<Resource>> GetResourcesWithActions();
 
+        Task<Dictionary<string, Resource>> GetResourcesWithActionsMap();
+
         Task<Dictionary<TKey, Resource>> GetResourcesMapAsync<TKey>(Func<Resource, TKey> keySelector) where TKey : notnull;
     }
 }
