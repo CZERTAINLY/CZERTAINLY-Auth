@@ -82,12 +82,6 @@ namespace Czertainly.Auth.Services
 
                 allResourcesMap.Remove(resourcePermissions.Name);
             }
-
-            // add empty resources
-            foreach (var resource in allResourcesMap.Values)
-            {
-                subjectPermissions.Resources.Add(new ResourcePermissionsDto { Name = resource.Name, AllowAllActions = subjectPermissions.AllowAllResources });
-            }
         }
 
         private void AddVerboseResourcePermissions(ResourcePermissionsDto resourcePermissions, Resource resource)
