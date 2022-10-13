@@ -1,5 +1,4 @@
-﻿using Czertainly.Auth.Common.Logging;
-using System.Net;
+﻿using System.Net;
 
 namespace Czertainly.Auth.Common.Exceptions
 {

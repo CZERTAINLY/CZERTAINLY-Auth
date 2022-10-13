@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Czertainly.Auth.Common.Logging;
 using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Models.Dto;
