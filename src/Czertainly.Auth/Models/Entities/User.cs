@@ -39,6 +39,9 @@ public class User : TimestampedEntity
     [Column("certificate_fingerprint")]
     public string? CertificateFingerprint { get; set; }
 
+    [Column("auth_token_sub")]
+    public string? AuthTokenSubjectId { get; set; }
+
     public ICollection<Role> Roles { get; set; } = null!;
 
 }

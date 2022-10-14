@@ -95,7 +95,7 @@ namespace Czertainly.Auth.Services
 
                 if (authenticationToken == null) throw new UnauthorizedException("Authentication token is empty or invalid JSON.");
 
-                _logger.LogInformation($"Auth token contains user with username '{authenticationToken.Username}' and roles '{authenticationToken.Roles}'");
+                _logger.LogInformation($"Auth token contains user with username '{authenticationToken.Username}' and roles '{string.Join(',', authenticationToken.Roles)}'");
 
                 user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
                 if (user == null && !_authOptions.CreateUnknownUsers) throw new UnauthorizedException($"Unknown user with username '{authenticationToken.Username}'.");
@@ -112,21 +112,27 @@ namespace Czertainly.Auth.Services
                         await _repositoryManager.SaveAsync();
                     }
 
-                    Guid? roleUuid = null;
-                    var role = await _repositoryManager.Role.GetByConditionAsync(r => r.Name == authenticationToken.Roles);
+                    var userRoleNames = new HashSet<string>();
+                    if (user.Roles != null) foreach (var role in user.Roles) userRoleNames.Add(role.Name);
 
-                    if (role != null) roleUuid = role.Uuid;
-                    else if (_authOptions.CreateUnknownRoles)
+                    foreach (var roleName in authenticationToken.Roles)
                     {
-                        _logger.LogInformation($"Creating new role with name '{authenticationToken.Roles}'");
-                        var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = authenticationToken.Roles });
-                        roleUuid = roleDto.Uuid;
-                    }
+                        Guid? roleUuid = null;
+                        var role = await _repositoryManager.Role.GetByConditionAsync(r => r.Name == roleName);
 
-                    if (roleUuid.HasValue)
-                    {
-                        _logger.LogInformation($"Assign roles '{authenticationToken.Roles}' to user '{authenticationToken.Username}'");
-                        await AssignRolesAsync(user.Uuid, new[] { roleUuid.Value });
+                        if (role != null && !userRoleNames.Contains(roleName)) roleUuid = role.Uuid;
+                        if (role == null && _authOptions.CreateUnknownRoles)
+                        {
+                            _logger.LogInformation($"Creating new role with name '{roleName}'");
+                            var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = roleName });
+                            roleUuid = roleDto.Uuid;
+                        }
+
+                        if (roleUuid.HasValue)
+                        {
+                            _logger.LogInformation($"Assign role '{roleName}' to user '{authenticationToken.Username}'");
+                            await AssignRoleAsync(user.Uuid, roleUuid.Value);
+                        }
                     }
                 }
                 catch (UnauthorizedException) { throw; }

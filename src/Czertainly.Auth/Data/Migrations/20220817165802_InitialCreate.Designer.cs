@@ -169,6 +169,10 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnName("uuid")
                         .HasColumnOrder(0);
 
+                    b.Property<string>("AuthTokenSubjectId")
+                        .HasColumnType("text")
+                        .HasColumnName("auth_token_sub");
+
                     b.Property<string>("CertificateFingerprint")
                         .HasColumnType("text")
                         .HasColumnName("certificate_fingerprint");

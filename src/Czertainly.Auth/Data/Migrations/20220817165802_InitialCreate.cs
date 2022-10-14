@@ -73,6 +73,7 @@ namespace Czertainly.Auth.Data.Migrations
                     system_user = table.Column<bool>(type: "boolean", nullable: false),
                     certificate_uuid = table.Column<Guid>(type: "uuid", nullable: true),
                     certificate_fingerprint = table.Column<string>(type: "text", nullable: true),
+                    auth_token_sub = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
