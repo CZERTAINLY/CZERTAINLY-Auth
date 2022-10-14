@@ -2,49 +2,59 @@
 
 > This repository is part of the commercial open source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/3KeyCompany/CZERTAINLY) repository, including the contribution guide.
 
-`Auth` service in Czertainly platform is designed as central service for managing access control to different resources (entities) in Czertainly platform and authenticate users based on authentication type.
+`Auth` service is designed as a central service for managing access control to different resources and related actions and objects, and authenticate users based on authentication type.
 
-`Auth` service offers following functionality:
+`Auth` service offers the following functionality:
 - authentication of user
 - management of roles
 - management of users and their roles membership
-- management of resources (entities) and their actions
-- management of roles permissions for specific resources and their actions
+- management of resources and related actions
+- management of role permissions for specific resources and related actions
 
-User can belong to multiple roles and thus permissions of users are merged from permissions of its individual roles permissions.
+User can belong to multiple roles and permissions are merged in this case from all assigned roles.
+
+> **Note**
+> The authorization is performed by the OPA. This service manages users, roles, and associated permissions that can be assigned to users, including internal authentication.
 
 ## Authentication flow
 
-Currently, there are 3 user authentication types in `Auth` service based on data in payload of authentication endpoint `/auth`:
-- X.509 certificate - certificate content is passed as URL encoded BASE64 string   
-- JSON authentication token
-- Username of system user
+Currently, there are 3 authentication types supported based on data provided in this order:
+1. X.509 certificate - certificate content is passed as URL encoded BASE64 string   
+2. JSON authentication token - Base64-encoded content
+3. Username of system user
 
-After successful authentication, user details with its merged role permissions is returned. If none of above specified data are present, user is authenticated as anonymous user with limited permissions only for internal purposes.
+After successful authentication, user details with its merged role permissions is returned. If none of the above specified data is present, user is identified as anonymous user with limited permissions.
 
 ### X.509 Certificate
 
 When authenticating user with certificate, its content string is decoded and parsed.
 Afterwards it is verified if it is valid and trusted.
+
 Then, based on its fingerprint, it is mapped to user from database and return authentication response.
+The authentication certificate can be assigned to maximum 1 user. 
 
 ### JSON authentication token
 
-When authenticating user with JSON auth token, it is deserialized and must conform to the required structure.
-In this authentication type, username specified in token is used as unique information based on which user is mapped.
-If user with specified username does not exist, based on configuration of `auth` service, user can be automatically created with information from token.
-Same can be applied for user's roles. Based on configuration, also roles can be automatically created. Existing roles specified in token are assigned to user.
+When authenticating user with JSON authentication token, it is decoded and must conform to the required structure.
+In this authentication type, username specified in token is used as unique information based on which user is identified.
+
+`Auth` service can be further configured to create user or role, if it does not exist.
 
 ### Username of system user
 
-This authentication type is used only for internal authentication of system users to elevate permissions and perform actions that are otherwise subject to authorization.
+Username is used only for internal authentication of system users to elevate permissions and perform actions that are otherwise subject to authorization. This is not exposed for the external authentication.
+
+## Authorization
+
+This service does not evaluate permissions.
+The authorization is controlled by the [Open Policy Agent](https://www.openpolicyagent.org/). For more information, refer to [CZERTAINLY Documentation](https://docs.czertainly.com/docs/concept-design/architecture/access-control). 
 
 ## Docker container
 
 `Auth` service is provided as a Docker container. Use the `3keycompany/czertainly-auth:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
 
-| Variable                               | Description                                                                         | Required | Default value |
-|----------------------------------------|-------------------------------------------------------------------------------------|----------|---------------|
-| `ConnectionStrings__DefaultConnection` | Connection string for database access                                               | Yes      | N/A           |
-| `AuthOptions__CreateUnknownUsers`      | Unknown user with username specified in auth token will be created                  | No       | false         |
-| `AuthOptions__CreateUnknownRoles`      | Unknown role with name specified in auth token will be created and assigned to user | No       | false         |
+| Variable                               | Description                                                                         | Required                                              | Default value |
+|----------------------------------------|-------------------------------------------------------------------------------------|-------------------------------------------------------|---------------|
+| `ConnectionStrings__DefaultConnection` | Connection string for database access                                               | ![YES](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
+| `AuthOptions__CreateUnknownUsers`      | Unknown user with username specified in auth token will be created                  | ![NO](https://img.shields.io/badge/-NO-red.svg)       | `false`       |
+| `AuthOptions__CreateUnknownRoles`      | Unknown role with name specified in auth token will be created and assigned to user | ![NO](https://img.shields.io/badge/-NO-red.svg)       | `false`       |
