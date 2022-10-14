@@ -8,6 +8,6 @@ namespace Czertainly.Auth.Common.Models.Dto
 
         public int PageSize { get; set; } = 1000;
 
-        public string? SortBy { get; set; }
+        public string? SortBy { get; set; } = "uuid";
     }
 }
