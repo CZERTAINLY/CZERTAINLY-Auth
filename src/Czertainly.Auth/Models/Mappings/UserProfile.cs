@@ -11,7 +11,8 @@ namespace Czertainly.Auth.Models.Mappings
         public UserProfile()
         {
             CreateMap<AuthenticationTokenDto, User>()
-                .ForMember(dest => dest.Roles, o => o.MapFrom(src => new List<Role>()));
+                .ForMember(dest => dest.Roles, o => o.MapFrom(src => new List<Role>()))
+                .ForMember(dest => dest.AuthTokenSubjectId, o => o.MapFrom(src => src.SubjectId));
             CreateMap<UserRequestDto, User>();
             CreateMap<UserUpdateRequestDto, User>();
             CreateMap<User, UserDto>();

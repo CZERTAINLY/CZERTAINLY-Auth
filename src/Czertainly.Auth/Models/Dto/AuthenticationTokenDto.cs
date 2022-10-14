@@ -8,7 +8,7 @@ namespace Czertainly.Auth.Models.Dto
     {
         [Required]
         [JsonPropertyName("sub")]
-        public Guid Uuid { get; init; }
+        public string SubjectId { get; init; }
 
         [Required]
         [JsonPropertyName("username")]
@@ -24,7 +24,7 @@ namespace Czertainly.Auth.Models.Dto
         public string Email { get; init; }
 
         [JsonPropertyName("roles")]
-        public string Roles { get; init; }
+        public string[] Roles { get; init; }
 
         public bool Enabled { get; init; } = true;
 
