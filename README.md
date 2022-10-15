@@ -54,8 +54,8 @@ The authorization is controlled by the [Open Policy Agent](https://www.openpolic
 
 `Auth` service is provided as a Docker container. Use the `3keycompany/czertainly-auth:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
 
-| Variable                               | Description                                                                                        | Required                                           | Default value |
-|----------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------|---------------|
-| `ConnectionStrings__DefaultConnection` | Connection string for database access                                                              | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
-| `AuthOptions__CreateUnknownUsers`      | Unknown user with username specified in JSON authentication token will be created                  | ![NO](https://img.shields.io/badge/-NO-red.svg)    | `false`       |
-| `AuthOptions__CreateUnknownRoles`      | Unknown role with name specified in JSON authentication token will be created and assigned to user | ![NO](https://img.shields.io/badge/-NO-red.svg)    | `false`       |
+| Variable                     | Description                                                                                        | Required                                           | Default value |
+|------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------|---------------|
+| `AUTH_DB_CONNECTION_STRING`  | Connection string for database access                                                              | ![](https://img.shields.io/badge/-YES-success.svg) | `N/A`         |
+| `AUTH_CREATE_UNKNOWN_USERS`  | Unknown user with username specified in JSON authentication token will be created                  | ![NO](https://img.shields.io/badge/-NO-red.svg)    | `false`       |
+| `AUTH_CREATE_UNKNOWN_ROLES`  | Unknown role with name specified in JSON authentication token will be created and assigned to user | ![NO](https://img.shields.io/badge/-NO-red.svg)    | `false`       |
