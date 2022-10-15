@@ -58,16 +58,21 @@ try
         o.ReportApiVersions = true;
     });
 
+    builder.Configuration.AddEnvironmentVariables("AUTH_");
     builder.Services.AddDbContext<AuthDbContext>(opts =>
     {
-        opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), pgsqlOpts =>
+        opts.UseNpgsql(builder.Configuration.GetValue<string>("AUTH_DB_CONNECTION_STRING"), pgsqlOpts =>
         {
             pgsqlOpts.MigrationsHistoryTable("_migrations_history", "auth");
         });
     });
 
     // add configurations
-    builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection(AuthOptions.Section));
+    builder.Services.Configure<AuthOptions>(authOptions =>
+    {
+        authOptions.CreateUnknownUsers = builder.Configuration.GetValue<bool>("AUTH_CREATE_UNKNOWN_USERS");
+        authOptions.CreateUnknownRoles = builder.Configuration.GetValue<bool>("AUTH_CREATE_UNKNOWN_ROLES");
+    });
 
     // add app services
     builder.Services.AddScoped<ValidationFilter>();

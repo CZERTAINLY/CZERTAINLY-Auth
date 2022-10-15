@@ -24,7 +24,7 @@ namespace Czertainly.Auth.Models.Dto
         public string Email { get; init; }
 
         [JsonPropertyName("roles")]
-        public string[] Roles { get; init; } = new string[0];
+        public string[] Roles { get; init; } = Array.Empty<string>();
 
         public bool Enabled { get; init; } = true;
 

@@ -94,8 +94,9 @@ namespace Czertainly.Auth.Services
                 }
 
                 if (authenticationToken == null) throw new UnauthorizedException("Authentication token is empty or invalid JSON.");
+                var roleNames = authenticationToken.Roles ?? Array.Empty<string>();
 
-                _logger.LogInformation($"Auth token contains user with username '{authenticationToken.Username}' and roles '{string.Join(',', authenticationToken.Roles)}'");
+                _logger.LogInformation($"Auth token contains user with username '{authenticationToken.Username}' and roles '{string.Join(',', roleNames)}'");
 
                 user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
                 if (user == null && !_authOptions.CreateUnknownUsers) throw new UnauthorizedException($"Unknown user with username '{authenticationToken.Username}'.");
@@ -115,7 +116,7 @@ namespace Czertainly.Auth.Services
                     var userRoleNames = new HashSet<string>();
                     if (user.Roles != null) foreach (var role in user.Roles) userRoleNames.Add(role.Name);
 
-                    foreach (var roleName in authenticationToken.Roles)
+                    foreach (var roleName in roleNames)
                     {
                         Guid? roleUuid = null;
                         var role = await _repositoryManager.Role.GetByConditionAsync(r => r.Name == roleName);
