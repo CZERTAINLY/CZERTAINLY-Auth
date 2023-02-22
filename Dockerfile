@@ -2,7 +2,6 @@
 
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /
@@ -16,8 +15,17 @@ FROM build AS publish
 RUN dotnet publish "Czertainly.Auth.csproj" -c Release -o /app/publish
 
 FROM base AS final
+
+RUN addgroup --system --gid 10001 czertainly && adduser --system --home /opt/czertainly --uid 10001 --ingroup czertainly czertainly
+#RUN addgroup --group czertainly --gid 10001 && adduser --uid 10001 --gid 10001 "czertainly" 
+
 COPY --from=publish /app/publish /opt/czertainly
 COPY ./docker /opt/czertainly
+
 WORKDIR /opt/czertainly
-RUN find . -name "*.sh" -exec chmod +x {} \;
+
+ENV COMPlus_EnableDiagnostics=0
+
+USER 10001
+
 ENTRYPOINT ["/opt/czertainly/entry.sh"]
