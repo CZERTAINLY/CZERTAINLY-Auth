@@ -16,6 +16,8 @@ RUN dotnet publish "Czertainly.Auth.csproj" -c Release -o /app/publish
 
 FROM base AS final
 
+MAINTAINER CZERTAINLY <support@czertainly.com>
+
 RUN addgroup --system --gid 10001 czertainly && adduser --system --home /opt/czertainly --uid 10001 --ingroup czertainly czertainly
 #RUN addgroup --group czertainly --gid 10001 && adduser --uid 10001 --gid 10001 "czertainly" 
 
@@ -25,6 +27,10 @@ COPY ./docker /opt/czertainly
 WORKDIR /opt/czertainly
 
 ENV COMPlus_EnableDiagnostics=0
+
+ENV AUTH_DB_CONNECTION_STRING=
+ENV AUTH_CREATE_UNKNOWN_USERS=false
+ENV AUTH_CREATE_UNKNOWN_ROLES=false
 
 USER 10001
 
