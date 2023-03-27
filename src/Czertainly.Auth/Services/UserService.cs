@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Czertainly.Auth.Common.Data;
 using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
@@ -8,12 +7,10 @@ using Czertainly.Auth.Models.Config;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
-using System.Web;
 
 namespace Czertainly.Auth.Services
 {
@@ -58,6 +55,50 @@ namespace Czertainly.Auth.Services
             if (user.SystemUser) throw new InvalidActionException("Cannot delete system user.");
 
             await base.DeleteAsync(key);
+        }
+
+        public async Task<UserDetailDto> IdentifyUserAsync(AuthenticationRequestDto authenticationRequestDto)
+        {
+            User? user = null;
+            if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
+            {
+                _logger.LogInformation("Identifying user with certificate");
+                var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
+
+                var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
+                _logger.LogInformation("Certificate parsed. Fingerprint: " + sha256Fingerprint);
+
+                user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
+            }
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
+            {
+                // Authentication token processing
+                _logger.LogInformation("Authenticating user with OIDC token");
+                AuthenticationTokenDto? authenticationToken = null;
+                try
+                {
+                    var decodedToken = Convert.FromBase64String(authenticationRequestDto.AuthenticationToken);
+                    var decodedTokenString = Encoding.UTF8.GetString(decodedToken);
+                    authenticationToken = JsonSerializer.Deserialize<AuthenticationTokenDto>(decodedToken);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidFormatException("Wrong format of authentication token.", ex);
+                }
+
+                if (authenticationToken != null)
+                {
+                    user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
+                }
+            }
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.SystemUsername))
+            {
+                throw new InvalidActionException("Cannot identify user by system username");
+            }
+
+            if (user == null) throw new EntityNotFoundException("User to identify not found");
+
+            return await GetDetailAsync(user.Uuid);
         }
 
         public async Task<AuthenticationResponseDto> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
@@ -221,14 +262,11 @@ namespace Czertainly.Auth.Services
             return _mapper.Map<UserDetailDto>(user);
         }
 
-        private X509Certificate2 ParseCertificate(string clientCertificate)
+        private X509Certificate2 ParseCertificate(string clientCertificateContent)
         {
-            var decodedCertificate = HttpUtility.UrlDecode(clientCertificate);
-            var certPemString = decodedCertificate.Replace("-----BEGIN CERTIFICATE-----", "").Replace("-----END CERTIFICATE-----", "").ReplaceLineEndings("");
-
             try
             {
-                return new X509Certificate2(Convert.FromBase64String(certPemString));
+                return new X509Certificate2(Convert.FromBase64String(clientCertificateContent));
             }
             catch (FormatException ex)
             {
