@@ -60,6 +60,50 @@ namespace Czertainly.Auth.Services
             await base.DeleteAsync(key);
         }
 
+        public async Task<UserDetailDto> IdentifyUserAsync(AuthenticationRequestDto authenticationRequestDto)
+        {
+            User? user = null;
+            if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
+            {
+                _logger.LogInformation("Identifying user with certificate");
+                var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
+
+                var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
+                _logger.LogInformation("Certificate parsed. Fingerprint: " + sha256Fingerprint);
+
+                user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
+            }
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
+            {
+                // Authentication token processing
+                _logger.LogInformation("Authenticating user with OIDC token");
+                AuthenticationTokenDto? authenticationToken = null;
+                try
+                {
+                    var decodedToken = Convert.FromBase64String(authenticationRequestDto.AuthenticationToken);
+                    var decodedTokenString = Encoding.UTF8.GetString(decodedToken);
+                    authenticationToken = JsonSerializer.Deserialize<AuthenticationTokenDto>(decodedToken);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidFormatException("Wrong format of authentication token.", ex);
+                }
+
+                if (authenticationToken != null)
+                {
+                    user = await _repository.GetByConditionAsync(u => u.Username == authenticationToken.Username);
+                }
+            }
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.SystemUsername))
+            {
+                throw new InvalidActionException("Cannot identify user by system username");
+            }
+
+            if (user == null) throw new EntityNotFoundException("User to identify not found");
+
+            return await GetDetailAsync(user.Uuid);
+        }
+
         public async Task<AuthenticationResponseDto> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto)
         {
             User? user = null;
