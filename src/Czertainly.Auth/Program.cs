@@ -45,6 +45,7 @@ try
             };
         });
 
+    builder.Services.AddHealthChecks();
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(swagger =>
     {
@@ -84,6 +85,7 @@ try
     builder.Services.AddScoped<IActionService, ActionService>();
 
     var app = builder.Build();
+    app.MapHealthChecks("/health");
 
     if (app.Environment.IsDevelopment())
     {
