@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Czertainly.Auth.Common.Data;
 using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
@@ -8,12 +7,10 @@ using Czertainly.Auth.Models.Config;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Models.Entities;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
-using System.Web;
 
 namespace Czertainly.Auth.Services
 {
@@ -265,14 +262,11 @@ namespace Czertainly.Auth.Services
             return _mapper.Map<UserDetailDto>(user);
         }
 
-        private X509Certificate2 ParseCertificate(string clientCertificate)
+        private X509Certificate2 ParseCertificate(string clientCertificateContent)
         {
-            var decodedCertificate = HttpUtility.UrlDecode(clientCertificate);
-            var certPemString = decodedCertificate.Replace("-----BEGIN CERTIFICATE-----", "").Replace("-----END CERTIFICATE-----", "").ReplaceLineEndings("");
-
             try
             {
-                return new X509Certificate2(Convert.FromBase64String(certPemString));
+                return new X509Certificate2(Convert.FromBase64String(clientCertificateContent));
             }
             catch (FormatException ex)
             {
