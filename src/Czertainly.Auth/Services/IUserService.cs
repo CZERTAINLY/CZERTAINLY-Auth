@@ -1,6 +1,4 @@
-﻿using Czertainly.Auth.Common.Data;
-using Czertainly.Auth.Common.Models.Dto;
-using Czertainly.Auth.Common.Services;
+﻿using Czertainly.Auth.Common.Services;
 using Czertainly.Auth.Models.Dto;
 
 namespace Czertainly.Auth.Services
@@ -8,6 +6,8 @@ namespace Czertainly.Auth.Services
     public interface IUserService : ICrudService<UserDto, UserDetailDto>
     {
         Task<AuthenticationResponseDto> AuthenticateUserAsync(AuthenticationRequestDto authenticationRequestDto);
+        Task<UserDetailDto> IdentifyUserAsync(AuthenticationRequestDto authenticationRequestDto);
+
 
         Task<UserDetailDto> EnableUserAsync(Guid userUuid, bool enableFlag);
 
@@ -16,6 +16,5 @@ namespace Czertainly.Auth.Services
         Task<UserDetailDto> RemoveRoleAsync(Guid userUuid, Guid roleUuid);
 
         Task<List<UserDto>> GetRoleUsersAsync(Guid roleUuid);
-
     }
 }

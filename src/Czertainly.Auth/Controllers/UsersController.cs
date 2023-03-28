@@ -29,6 +29,14 @@ namespace Czertainly.Auth.Controllers
             return Ok(result);
         }
 
+        [HttpPost("users/identify")]
+        public async Task<ActionResult<UserDetailDto>> IdentifyUserAsync([FromBody] AuthenticationRequestDto authenticationRequestDto)
+        {
+            var result = await _userService.IdentifyUserAsync(authenticationRequestDto);
+
+            return Ok(result);
+        }
+
         [HttpGet("users")]
         public async Task<ActionResult<PagedResponse<UserDto>>> GetUsersAsync()
         {
