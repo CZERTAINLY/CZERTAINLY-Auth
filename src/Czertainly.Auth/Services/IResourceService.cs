@@ -8,6 +8,8 @@ namespace Czertainly.Auth.Services
     {
         Task<List<ResourceDetailDto>> GetAllResourcesAsync();
 
+        Task AddResourcesAsync(List<ResourceSyncRequestDto> resources);
+
         Task<SyncResourcesResponseDto> SyncResourcesAsync(List<ResourceSyncRequestDto> resources);
 
     }

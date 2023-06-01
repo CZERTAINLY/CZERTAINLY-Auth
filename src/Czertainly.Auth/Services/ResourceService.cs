@@ -25,6 +25,54 @@ namespace Czertainly.Auth.Services
             return _mapper.Map<List<ResourceDetailDto>>(resources);
         }
 
+        public async Task AddResourcesAsync(List<ResourceSyncRequestDto> resources)
+        {
+            _logger.LogInformation("Saving resources");
+            var resourcesMapping = await _repositoryManager.Resource.GetResourcesMapAsync(r => r.Name);
+            var actionsMapping = await _repositoryManager.Action.GetDictionaryMap(a => a.Name);
+
+            var transaction = await _repositoryManager.BeginTransactionAsync();
+
+            try
+            {
+                foreach (var resourceSyncDto in resources)
+                {
+                    // check if to add/update resource
+                    if (!resourcesMapping.TryGetValue(resourceSyncDto.Name, out var resourceEntity))
+                    {
+                        resourceEntity = new Resource { Name = resourceSyncDto.Name, DisplayName = DisplayNameHelper.GetDisplayName(resourceSyncDto.Name), ListObjectsEndpoint = resourceSyncDto.ListObjectsEndpoint, Actions = new List<Models.Entities.Action>() };
+                        _repository.Create(resourceEntity);
+                        _repository.Reload(resourceEntity);
+
+                        resourcesMapping.Add(resourceSyncDto.Name, resourceEntity);
+                    }
+                    
+                    // check if to add action
+                    foreach (var actionName in resourceSyncDto.Actions)
+                    {
+                        if (actionName == AnyActionName) continue;
+
+                        if (!actionsMapping.TryGetValue(actionName, out var actionEntity))
+                        {
+                            var dto = new ActionRequestDto { Name = actionName, DisplayName = DisplayNameHelper.GetDisplayName(actionName) };
+                            var actionDto = await _actionService.CreateAsync(dto);
+                            actionEntity = await _repositoryManager.Action.GetByKeyAsync(actionDto.Uuid);
+                            actionsMapping.Add(actionName, actionEntity);
+                        }
+                        resourceEntity.Actions.Add(actionEntity);
+                    }
+                }
+
+                await _repositoryManager.SaveAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
         public async Task<SyncResourcesResponseDto> SyncResourcesAsync(List<ResourceSyncRequestDto> resources)
         {
             _logger.LogInformation("Synchronizing resources from Core service");
