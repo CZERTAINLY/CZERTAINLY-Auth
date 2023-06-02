@@ -10,6 +10,7 @@ namespace Czertainly.Auth.Models.Dto
         public string? AuthenticationToken { get; init; }
         
         public string? SystemUsername { get; init; }
+        public string? UserUuid { get; init; }
 
     }
 }

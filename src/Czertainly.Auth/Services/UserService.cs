@@ -106,13 +106,13 @@ namespace Czertainly.Auth.Services
             User? user = null;
             if (!string.IsNullOrEmpty(authenticationRequestDto.CertificateContent))
             {
-                _logger.LogInformation("Authenticating user with certificate");
+                _logger.LogDebug("Authenticating user with certificate");
                 var clientCertificate = ParseCertificate(authenticationRequestDto.CertificateContent);
                 var isCertValid = VerifyClientCertificate(clientCertificate, out var chainStatusInfos);
                 if (!isCertValid) throw new UnauthorizedException("User client certificate is invalid.", new Exception(string.Join('\n', chainStatusInfos)));
 
                 var sha256Fingerprint = Convert.ToHexString(clientCertificate.GetCertHash(HashAlgorithmName.SHA256)).ToLower();
-                _logger.LogInformation("Certificate parsed and verified. Fingerprint: " + sha256Fingerprint);
+                _logger.LogDebug("Certificate parsed and verified. Fingerprint: " + sha256Fingerprint);
 
                 user = await _repository.GetByConditionAsync(u => u.CertificateFingerprint == sha256Fingerprint);
 
@@ -121,7 +121,7 @@ namespace Czertainly.Auth.Services
             else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
             {
                 // Authentication token processing
-                _logger.LogInformation("Authenticating user with OIDC token");
+                _logger.LogDebug("Authenticating user with OIDC token");
                 AuthenticationTokenDto? authenticationToken = null;
                 try
                 {
@@ -188,15 +188,22 @@ namespace Czertainly.Auth.Services
             }
             else if (!string.IsNullOrEmpty(authenticationRequestDto.SystemUsername))
             {
-                _logger.LogInformation($"Authenticating system user with username '{authenticationRequestDto.SystemUsername}'");
+                _logger.LogDebug($"Authenticating system user with username '{authenticationRequestDto.SystemUsername}'");
                 user = await _repository.GetByConditionAsync(u => u.SystemUser && u.Username == authenticationRequestDto.SystemUsername);
 
                 if (user == null) throw new UnauthorizedException("Unknown system user for specified username: " + authenticationRequestDto.SystemUsername);
             }
+            else if (!string.IsNullOrEmpty(authenticationRequestDto.UserUuid))
+            {
+                _logger.LogDebug($"Authenticating user with UUID '{authenticationRequestDto.UserUuid}'");
+                user = await _repository.GetByConditionAsync(u => u.Uuid == Guid.Parse(authenticationRequestDto.UserUuid));
+
+                if (user == null) throw new UnauthorizedException("Unknown user for specified UUID: " + authenticationRequestDto.UserUuid);
+            }
 
             if (user == null)
             {
-                _logger.LogInformation("Authenticated as anonymous user");
+                _logger.LogDebug("Authenticated as anonymous user");
                 return new AuthenticationResponseDto { Authenticated = false };
             }
 
