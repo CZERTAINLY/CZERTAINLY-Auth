@@ -38,9 +38,11 @@ namespace Czertainly.Auth.Controllers
         }
 
         [HttpGet("users")]
-        public async Task<ActionResult<PagedResponse<UserDto>>> GetUsersAsync()
+
+        public async Task<ActionResult<PagedResponse<UserDto>>> GetUsersAsync([FromQuery] string? group)
+        //public async Task<ActionResult<PagedResponse<UserDto>>> GetUsersAsync()
         {
-            var result = await _userService.GetAsync(new QueryRequestDto());
+            var result = await _userService.GetAsync(new UserQueryRequestDto { Group = group });
 
             return Ok(result);
         }

@@ -25,6 +25,12 @@ public class User : TimestampedEntity
     [Column("description")]
     public string? Description { get; set; }
 
+    [Column("group_name")]
+    public string? GroupName { get; set; }
+
+    [Column("group_uuid")]
+    public Guid? GroupUuid { get; set; }
+
     [Required]
     [Column("enabled")]
     public bool Enabled { get; set; }
