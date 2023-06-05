@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Czertainly.Auth.Common.Data;
 using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Common.Models.Dto;
 using Czertainly.Auth.Common.Services;
@@ -27,6 +28,24 @@ namespace Czertainly.Auth.Services
 
             _roleService = roleService;
             _permissionService = permissionService;
+        }
+
+        public override async Task<PagedResponse<UserDto>> GetAsync(IQueryRequestDto dto)
+        {
+            string? groupName = null;
+            if(dto is UserQueryRequestDto queryDto)
+            {
+                groupName = queryDto.Group;
+            }
+
+            var queryParams = _mapper.Map<QueryStringParameters>(dto);
+            var users = await (groupName == null ? _repository.GetAllAsync(queryParams) : _repository.GetWhereAsync(queryParams, u => u.GroupName == groupName));
+
+            return new PagedResponse<UserDto>
+            {
+                Data = _mapper.Map<List<UserDto>>(users),
+                Links = _mapper.Map<PagingMetadata>(users),
+            };
         }
 
         public override async Task<UserDetailDto> CreateAsync(ICrudRequestDto dto)
