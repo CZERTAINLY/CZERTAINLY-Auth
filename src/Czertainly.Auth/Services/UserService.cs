@@ -236,7 +236,7 @@ namespace Czertainly.Auth.Services
                 Data = new UserProfileDto
                 {
                     User = _mapper.Map<UserDto>(user),
-                    Roles = user.Roles.Select(r => r.Name).ToList(),
+                    Roles = user.Roles.Select(r => new NameAndUuidDto { Uuid = r.Uuid, Name = r.Name }).ToList(),
                     Permissions = permissions,
                 }
             };
