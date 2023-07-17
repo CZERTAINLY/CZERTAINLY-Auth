@@ -10,6 +10,8 @@ namespace Czertainly.Auth.Models.Dto
 
         public string? Description { get; init; }
 
+        public string? Email { get; init; }
+
         [Required]
         public bool SystemRole { get; init; }
 
