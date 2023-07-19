@@ -9,7 +9,7 @@ namespace Czertainly.Auth.Models.Dto
         public UserDto User { get; init; }
 
         [Required]
-        public List<string> Roles { get; init; } = new List<string>();
+        public List<NameAndUuidDto> Roles { get; init; } = new List<NameAndUuidDto>();
 
         [Required]
         public SubjectPermissionsDto Permissions { get; init; }
