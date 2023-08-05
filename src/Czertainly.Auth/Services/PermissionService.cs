@@ -97,9 +97,9 @@ namespace Czertainly.Auth.Services
 
         #region Updating permissions
 
-        public async Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, RolePermissionsRequestDto rolePermissions, bool allowUpdateSystemRole = false)
+        public async Task<SubjectPermissionsDto> SaveRolePermissionsAsync(Guid roleUuid, RolePermissionsRequestDto rolePermissions)
         {
-            var role = await CheckRole(roleUuid, !allowUpdateSystemRole);
+            var role = await CheckRole(roleUuid, true);
             _logger.LogInformation($"Saving permissions of role '{role.Name}:{roleUuid}'");
 
             var transaction = await _repositoryManager.BeginTransactionAsync();
@@ -228,7 +228,7 @@ namespace Czertainly.Auth.Services
         private async Task<Role> CheckRole(Guid roleUuid, bool checkSystemRole)
         {
             var role = await _repositoryManager.Role.GetByKeyAsync(roleUuid);
-            if (checkSystemRole && role.SystemRole) throw new InvalidActionException("Cannot update system role permissions");
+            //if (checkSystemRole && role.SystemRole) throw new InvalidActionException("Cannot update system role permissions");
 
             return role;
         }

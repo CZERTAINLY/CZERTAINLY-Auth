@@ -28,7 +28,7 @@ namespace Czertainly.Auth.Services
             if (checkedRole != null) throw new EntityNotUniqueException($"Role with name '{roleRequestDto.Name}' already exists");
 
             var newRole = await base.CreateAsync(dto);
-            if (roleRequestDto.Permissions != null) await _permissionService.SaveRolePermissionsAsync(newRole.Uuid, roleRequestDto.Permissions, true);
+            if (roleRequestDto.Permissions != null) await _permissionService.SaveRolePermissionsAsync(newRole.Uuid, roleRequestDto.Permissions);
 
             return newRole;
         }
