@@ -12,9 +12,13 @@ namespace Czertainly.Auth.Models.Dto
 
         public string? LastName { get; init; }
 
-        public string Email { get; init; }
+        public string? Email { get; init; }
 
         public string? Description { get; init; }
+
+        public string? GroupName { get; init; }
+
+        public Guid? GroupUuid { get; init; }
 
         [Required]
         public bool Enabled { get; init; }

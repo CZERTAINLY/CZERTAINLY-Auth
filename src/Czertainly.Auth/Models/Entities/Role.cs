@@ -16,6 +16,9 @@ public class Role : TimestampedEntity
     [Column("description")]
     public string? Description { get; set; }
 
+    [Column("email")]
+    public string? Email { get; set; }
+
     [Required]
     [Column("system_role")]
     public bool SystemRole { get; set; }

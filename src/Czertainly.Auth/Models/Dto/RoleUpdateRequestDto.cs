@@ -7,5 +7,8 @@ namespace Czertainly.Auth.Models.Dto
     {
         public string? Description { get; init; }
 
+        [EmailAddress]
+        public string? Email { get; init; }
+
     }
 }

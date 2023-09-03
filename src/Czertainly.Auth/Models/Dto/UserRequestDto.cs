@@ -21,6 +21,10 @@ namespace Czertainly.Auth.Models.Dto
 
         public string? Description { get; init; }
 
+        public string? GroupName { get; init; }
+
+        public Guid? GroupUuid { get; init; }
+
         public Guid? CertificateUuid { get; init; }
 
         public string? CertificateFingerprint { get; init; }
