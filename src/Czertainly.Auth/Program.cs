@@ -18,6 +18,7 @@ logger.Debug("init main");
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddEnvironmentVariables();
 
     // NLog: Setup NLog for Dependency injection
     builder.Logging.ClearProviders();
@@ -59,7 +60,6 @@ try
         o.ReportApiVersions = true;
     });
 
-    builder.Configuration.AddEnvironmentVariables("AUTH_");
     builder.Services.AddDbContext<AuthDbContext>(opts =>
     {
         opts.UseNpgsql(builder.Configuration.GetValue<string>("AUTH_DB_CONNECTION_STRING"), pgsqlOpts =>
