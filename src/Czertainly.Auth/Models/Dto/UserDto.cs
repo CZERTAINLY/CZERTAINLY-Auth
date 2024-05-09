@@ -16,9 +16,8 @@ namespace Czertainly.Auth.Models.Dto
 
         public string? Description { get; init; }
 
-        public string? GroupName { get; init; }
-
-        public Guid? GroupUuid { get; init; }
+        [Required]
+        public List<NameAndUuidDto> Groups { get; init; } = new List<NameAndUuidDto>();
 
         [Required]
         public bool Enabled { get; init; }

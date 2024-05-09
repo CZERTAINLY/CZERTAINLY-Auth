@@ -21,9 +21,7 @@ namespace Czertainly.Auth.Models.Dto
 
         public string? Description { get; init; }
 
-        public string? GroupName { get; init; }
-
-        public Guid? GroupUuid { get; init; }
+        public List<NameAndUuidDto> Groups { get; init; } = new List<NameAndUuidDto>();
 
         public Guid? CertificateUuid { get; init; }
 
