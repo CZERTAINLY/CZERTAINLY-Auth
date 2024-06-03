@@ -39,7 +39,12 @@ namespace Czertainly.Auth.Services
             }
 
             var queryParams = _mapper.Map<QueryStringParameters>(dto);
-            var users = await (groupName == null ? _repository.GetAllAsync(queryParams) : _repository.GetWhereAsync(queryParams, u => u.GroupName == groupName));
+            var users = await _repository.GetAllAsync(queryParams);
+            if (groupName != null)
+            {
+                var filteredUsers = users.Where(u => u.Groups != null && u.Groups.Count > 0 && u.Groups.Exists(g => g.Name.Equals(groupName))).ToList();
+                users = PagedList<User>.CreateFromFullList(filteredUsers, queryParams.Page, queryParams.PageSize);
+            }
 
             return new PagedResponse<UserDto>
             {

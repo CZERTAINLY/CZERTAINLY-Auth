@@ -16,7 +16,7 @@ namespace Czertainly.Auth.Common.Data
         public bool HasNext => CurrentPage < TotalPages;
         public bool HasPrevious => CurrentPage > 1;
 
-        public PagedList(List<T> items, int count, int pageNumber, int pageSize)
+        public PagedList(IEnumerable<T> items, int count, int pageNumber, int pageSize)
         {
             TotalCount = count;
             PageSize = pageSize;
@@ -24,6 +24,12 @@ namespace Czertainly.Auth.Common.Data
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
             AddRange(items);
         }
+
+        public static PagedList<T> CreateFromFullList(List<T> fullList, int pageNumber, int pageSize)
+        {
+            return new PagedList<T>(fullList.Skip((pageNumber - 1) * pageSize).Take(pageSize), fullList.Count, pageNumber, pageSize);
+        }
+
         public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize)
         {
             var count = await source.CountAsync();

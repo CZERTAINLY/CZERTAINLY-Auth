@@ -48,7 +48,7 @@ Username is used only for internal identification of system users to elevate per
 ## Authorization
 
 This service does not evaluate permissions.
-The authorization is controlled by the [Open Policy Agent](https://www.openpolicyagent.org/). For more information, refer to [CZERTAINLY Documentation](https://docs.czertainly.com/docs/concept-design/architecture/access-control). 
+The authorization is controlled by the [Open Policy Agent](https://www.openpolicyagent.org/). For more information, refer to [CZERTAINLY Documentation](https://docs.czertainly.com/docs/certificate-key/concept-design/architecture/access-control/overview).
 
 ## Docker container
 
