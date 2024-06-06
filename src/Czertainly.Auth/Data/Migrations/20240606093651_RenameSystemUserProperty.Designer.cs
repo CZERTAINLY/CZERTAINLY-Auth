@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Czertainly.Auth.Data.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20240509130152_UserHasMultipleGroups")]
-    partial class UserHasMultipleGroups
+    [Migration("20240606093651_RenameSystemUserProperty")]
+    partial class RenameSystemUserProperty
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -210,13 +210,13 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("groups");
 
+                    b.Property<bool>("IsSystemUser")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_system_user");
+
                     b.Property<string>("LastName")
                         .HasColumnType("text")
                         .HasColumnName("last_name");
-
-                    b.Property<bool>("SystemUser")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_system_user");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

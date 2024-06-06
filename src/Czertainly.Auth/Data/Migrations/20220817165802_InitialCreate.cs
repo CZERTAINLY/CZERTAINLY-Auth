@@ -70,7 +70,7 @@ namespace Czertainly.Auth.Data.Migrations
                     email = table.Column<string>(type: "text", nullable: true),
                     description = table.Column<string>(type: "text", nullable: true),
                     enabled = table.Column<bool>(type: "boolean", nullable: false),
-                    system_user = table.Column<bool>(type: "boolean", nullable: false),
+                    is_system_user = table.Column<bool>(type: "boolean", nullable: false),
                     certificate_uuid = table.Column<Guid>(type: "uuid", nullable: true),
                     certificate_fingerprint = table.Column<string>(type: "text", nullable: true),
                     auth_token_sub = table.Column<string>(type: "text", nullable: true),

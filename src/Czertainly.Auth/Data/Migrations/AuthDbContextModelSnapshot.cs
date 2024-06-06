@@ -207,13 +207,13 @@ namespace Czertainly.Auth.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("groups");
 
+                    b.Property<bool>("IsSystemUser")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_system_user");
+
                     b.Property<string>("LastName")
                         .HasColumnType("text")
                         .HasColumnName("last_name");
-
-                    b.Property<bool>("SystemUser")
-                        .HasColumnType("boolean")
-                        .HasColumnName("system_user");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
