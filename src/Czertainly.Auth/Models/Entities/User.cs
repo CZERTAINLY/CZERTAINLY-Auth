@@ -35,7 +35,7 @@ public class User : TimestampedEntity
 
     [Required]
     [Column("is_system_user")]
-    public bool IsSystemUser { get; set; }
+    public bool SystemUser { get; set; }
 
     [Column("certificate_uuid")]
     public Guid? CertificateUuid { get; set; }
