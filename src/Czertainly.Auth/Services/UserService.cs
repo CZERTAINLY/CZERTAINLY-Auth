@@ -68,7 +68,7 @@ namespace Czertainly.Auth.Services
         public override async Task<UserDetailDto> UpdateAsync(Guid key, ICrudRequestDto dto)
         {
             var user = await _repository.GetByKeyAsync(key);
-            if (user.SystemUser) throw new InvalidActionException("Cannot update system user.");
+            if (user.IsSystemUser) throw new InvalidActionException("Cannot update system user.");
 
             return await base.UpdateAsync(key, dto);
         }
@@ -76,7 +76,7 @@ namespace Czertainly.Auth.Services
         public override async Task DeleteAsync(Guid key)
         {
             var user = await _repository.GetByKeyAsync(key);
-            if (user.SystemUser) throw new InvalidActionException("Cannot delete system user.");
+            if (user.IsSystemUser) throw new InvalidActionException("Cannot delete system user.");
 
             await base.DeleteAsync(key);
         }
@@ -213,7 +213,7 @@ namespace Czertainly.Auth.Services
             else if (!string.IsNullOrEmpty(authenticationRequestDto.SystemUsername))
             {
                 _logger.LogDebug($"Authenticating system user with username '{authenticationRequestDto.SystemUsername}'");
-                user = await _repository.GetByConditionAsync(u => u.SystemUser && u.Username == authenticationRequestDto.SystemUsername);
+                user = await _repository.GetByConditionAsync(u => u.IsSystemUser && u.Username == authenticationRequestDto.SystemUsername);
 
                 if (user == null) throw new UnauthorizedException("Unknown system user for specified username: " + authenticationRequestDto.SystemUsername);
             }
