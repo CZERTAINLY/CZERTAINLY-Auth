@@ -33,7 +33,7 @@ namespace Czertainly.Auth.Services
         public override async Task<PagedResponse<UserDto>> GetAsync(IQueryRequestDto dto)
         {
             string? groupName = null;
-            if(dto is UserQueryRequestDto queryDto)
+            if (dto is UserQueryRequestDto queryDto)
             {
                 groupName = queryDto.Group;
             }
@@ -145,7 +145,7 @@ namespace Czertainly.Auth.Services
             else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
             {
                 // Authentication token processing
-                _logger.LogDebug("Authenticating user with OIDC token");
+                _logger.LogDebug($"Authenticating user with OIDC token. Create users: {_authOptions.CreateUnknownUsers}. Create roles: {_authOptions.CreateUnknownRoles}. Sync policy: {_authOptions.SyncPolicy}");
                 AuthenticationTokenDto? authenticationToken = null;
                 try
                 {
@@ -175,6 +175,13 @@ namespace Czertainly.Auth.Services
                         _logger.LogInformation($"Creating new user with username '{authenticationToken.Username}'");
                         user = _mapper.Map<User>(authenticationToken);
                         _repository.Create(user);
+                        await _repositoryManager.SaveAsync();
+                    }
+                    else if (_authOptions.SyncPolicy == SyncPolicy.SyncData)
+                    {
+                        user.FirstName = authenticationToken.FirstName;
+                        user.LastName = authenticationToken.LastName;
+                        user.Email = authenticationToken.Email;
                         await _repositoryManager.SaveAsync();
                     }
 
