@@ -1,10 +1,8 @@
 ﻿using Czertainly.Auth.Common.Filters;
 using Czertainly.Auth.Common.Models.Dto;
-using Czertainly.Auth.Models.Config;
 using Czertainly.Auth.Models.Dto;
 using Czertainly.Auth.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace Czertainly.Auth.Controllers
 {
@@ -18,7 +16,6 @@ namespace Czertainly.Auth.Controllers
         public UsersController(IUserService userService)
         {
             _userService = userService;
-            
         }
 
         [HttpPost("")]

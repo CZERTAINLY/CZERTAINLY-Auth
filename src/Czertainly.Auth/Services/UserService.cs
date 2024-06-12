@@ -33,7 +33,7 @@ namespace Czertainly.Auth.Services
         public override async Task<PagedResponse<UserDto>> GetAsync(IQueryRequestDto dto)
         {
             string? groupName = null;
-            if(dto is UserQueryRequestDto queryDto)
+            if (dto is UserQueryRequestDto queryDto)
             {
                 groupName = queryDto.Group;
             }
@@ -145,7 +145,7 @@ namespace Czertainly.Auth.Services
             else if (!string.IsNullOrEmpty(authenticationRequestDto.AuthenticationToken))
             {
                 // Authentication token processing
-                _logger.LogDebug("Authenticating user with OIDC token");
+                _logger.LogDebug($"Authenticating user with OIDC token. Create users: {_authOptions.CreateUnknownUsers}. Create roles: {_authOptions.CreateUnknownRoles}. Sync policy: {_authOptions.SyncPolicy}");
                 AuthenticationTokenDto? authenticationToken = null;
                 try
                 {
@@ -159,7 +159,7 @@ namespace Czertainly.Auth.Services
                 }
 
                 if (authenticationToken == null) throw new UnauthorizedException("Authentication token is empty or invalid JSON.");
-                var roleNames = authenticationToken.Roles ?? Array.Empty<string>();
+                var roleNames = new HashSet<string>(authenticationToken.Roles) ?? new HashSet<string>();
 
                 _logger.LogInformation($"Auth token contains user with username '{authenticationToken.Username}' and roles '{string.Join(',', roleNames)}'");
 
@@ -170,34 +170,61 @@ namespace Czertainly.Auth.Services
 
                 try
                 {
+                    var isNewUser = false;
                     if (user == null)
                     {
+                        isNewUser = true;
                         _logger.LogInformation($"Creating new user with username '{authenticationToken.Username}'");
                         user = _mapper.Map<User>(authenticationToken);
                         _repository.Create(user);
                         await _repositoryManager.SaveAsync();
                     }
-
-                    var userRoleNames = new HashSet<string>();
-                    if (user.Roles != null) foreach (var role in user.Roles) userRoleNames.Add(role.Name);
-
-                    foreach (var roleName in roleNames)
+                    else if (_authOptions.SyncPolicy == SyncPolicy.SyncData)
                     {
-                        Guid? roleUuid = null;
-                        var role = await _repositoryManager.Role.GetByConditionAsync(r => r.Name == roleName);
+                        user.FirstName = authenticationToken.FirstName;
+                        user.LastName = authenticationToken.LastName;
+                        user.Email = authenticationToken.Email;
+                        await _repositoryManager.SaveAsync();
+                    }
 
-                        if (role != null && !userRoleNames.Contains(roleName)) roleUuid = role.Uuid;
-                        if (role == null && _authOptions.CreateUnknownRoles)
+                    if (isNewUser || _authOptions.SyncPolicy == SyncPolicy.SyncData)
+                    {
+                        var userRolesNames = new Dictionary<string, Guid>();
+                        if (user.Roles != null)
                         {
-                            _logger.LogInformation($"Creating new role with name '{roleName}'");
-                            var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = roleName });
-                            roleUuid = roleDto.Uuid;
+                            foreach (var role in user.Roles)
+                            {
+                                userRolesNames.Add(role.Name, role.Uuid);
+                            }
                         }
 
-                        if (roleUuid.HasValue)
+                        foreach (var roleName in roleNames)
                         {
-                            _logger.LogInformation($"Assign role '{roleName}' to user '{authenticationToken.Username}'");
-                            await AssignRoleAsync(user.Uuid, roleUuid.Value);
+                            Guid? roleUuid = null;
+                            var role = await _repositoryManager.Role.GetByConditionAsync(r => r.Name == roleName);
+
+                            if (role != null && !userRolesNames.ContainsKey(roleName)) roleUuid = role.Uuid;
+                            if (role == null && _authOptions.CreateUnknownRoles)
+                            {
+                                _logger.LogInformation($"Creating new role with name '{roleName}'");
+                                var roleDto = await _roleService.CreateAsync(new RoleRequestDto { Name = roleName });
+                                roleUuid = roleDto.Uuid;
+                            }
+
+                            if (roleUuid.HasValue)
+                            {
+                                _logger.LogInformation($"Assign role '{roleName}' to user '{authenticationToken.Username}'");
+                                await AssignRoleAsync(user.Uuid, roleUuid.Value);
+                            }
+                        }
+
+                        if (!isNewUser && _authOptions.SyncPolicy == SyncPolicy.SyncData)
+                        {
+                            foreach (var removeRoleName in userRolesNames.Keys.Except(roleNames))
+                            {
+                                _logger.LogInformation($"Unassign role '{removeRoleName}' to user '{authenticationToken.Username}'");
+                                await RemoveRoleAsync(user.Uuid, userRolesNames[removeRoleName]);
+                            }
                         }
                     }
                 }
