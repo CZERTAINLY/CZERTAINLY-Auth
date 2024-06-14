@@ -1,6 +1,7 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+ARG TARGETARCH
 WORKDIR /app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
@@ -13,9 +14,11 @@ WORKDIR "/src/Czertainly.Auth"
 RUN dotnet build "Czertainly.Auth.csproj" -c Release -o /app/build -a $TARGETARCH
 
 FROM build AS publish
+ARG TARGETARCH
 RUN dotnet publish "Czertainly.Auth.csproj" -c Release -o /app/publish -a $TARGETARCH
 
 FROM base AS final
+ARG TARGETARCH
 
 MAINTAINER CZERTAINLY <support@czertainly.com>
 
