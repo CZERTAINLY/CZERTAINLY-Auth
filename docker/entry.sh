@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 czertainlyHome="/opt/czertainly"
 source ${czertainlyHome}/static-functions
