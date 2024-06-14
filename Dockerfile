@@ -1,24 +1,20 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-ARG TARGETARCH
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG TARGETARCH
 WORKDIR /
 COPY ["src/Czertainly.Auth/Czertainly.Auth.csproj", "Czertainly.Auth/"]
-RUN dotnet restore "Czertainly.Auth/Czertainly.Auth.csproj" -a $TARGETARCH
+RUN dotnet restore "Czertainly.Auth/Czertainly.Auth.csproj"
 COPY . .
 WORKDIR "/src/Czertainly.Auth"
-RUN dotnet build "Czertainly.Auth.csproj" -c Release -o /app/build -a $TARGETARCH
+RUN dotnet build "Czertainly.Auth.csproj" -c Release -o /app/build
 
 FROM build AS publish
-ARG TARGETARCH
-RUN dotnet publish "Czertainly.Auth.csproj" -c Release -o /app/publish -a $TARGETARCH
+RUN dotnet publish "Czertainly.Auth.csproj" -c Release -o /app/publish
 
 FROM base AS final
-ARG TARGETARCH
 
 MAINTAINER CZERTAINLY <support@czertainly.com>
 
