@@ -43,7 +43,7 @@ jobs:
         with:
           images: |
             3keycompany/czertainly-auth
-            harbor.3key.company/czertainly-auth
+            harbor.3key.company/czertainly/czertainly-auth
           tags: |
             type=ref,event=tag
             type=raw,value=develop-latest
@@ -88,5 +88,5 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_PASS: ${{ secrets.DOCKER_HUB_PASSWORD }}
         with:
-          destination_container_repo: harbor.3key.company/czertainly-auth
+          destination_container_repo: harbor.3key.company/czertainly/czertainly-auth
           provider: harbor2
