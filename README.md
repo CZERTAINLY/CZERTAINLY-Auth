@@ -1,6 +1,6 @@
 # CZERTAINLY Auth Service
 
-> This repository is part of the commercial open source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/3KeyCompany/CZERTAINLY) repository, including the contribution guide.
+> This repository is part of the commercial open source project CZERTAINLY. You can find more information about the project at [CZERTAINLY](https://github.com/CZERTAINLY/CZERTAINLY) repository, including the contribution guide.
 
 `Auth` service is designed as a central service for managing access control to different resources and related actions and objects, and identify users based on identification token.
 
@@ -52,7 +52,7 @@ The authorization is controlled by the [Open Policy Agent](https://www.openpolic
 
 ## Docker container
 
-`Auth` service is provided as a Docker container. Use the `3keycompany/czertainly-auth:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
+`Auth` service is provided as a Docker container. Use the `czertainly/czertainly-auth:tagname` to pull the required image from the repository. It can be configured using the following environment variables:
 
 | Variable                    | Description                                                                                        | Required                                           | Default value |
 |-----------------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------|---------------|
