@@ -207,7 +207,7 @@ namespace Czertainly.Auth.Data.Migrations
 
                     b.Property<bool>("SystemUser")
                         .HasColumnType("boolean")
-                        .HasColumnName("system_user");
+                        .HasColumnName("is_system_user");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")

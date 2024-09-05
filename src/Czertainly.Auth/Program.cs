@@ -1,15 +1,15 @@
+using Czertainly.Auth.Common.Exceptions;
+using Czertainly.Auth.Common.Filters;
 using Czertainly.Auth.Data;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
 using Czertainly.Auth.Data.Contracts;
 using Czertainly.Auth.Data.Repositiories;
-using Czertainly.Auth.Services;
-using Czertainly.Auth.Common.Filters;
-using NLog.Web;
-using NLog;
-using Czertainly.Auth.Common.Exceptions;
 using Czertainly.Auth.Models.Config;
+using Czertainly.Auth.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using NLog;
+using NLog.Web;
 using System.Net.Mime;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
@@ -73,6 +73,7 @@ try
     {
         authOptions.CreateUnknownUsers = builder.Configuration.GetValue<bool>("AUTH_CREATE_UNKNOWN_USERS");
         authOptions.CreateUnknownRoles = builder.Configuration.GetValue<bool>("AUTH_CREATE_UNKNOWN_ROLES");
+        authOptions.SyncPolicy = AuthOptions.GetSyncPolicy(builder.Configuration.GetValue<string>("SYNC_POLICY"));
     });
 
     // add app services
